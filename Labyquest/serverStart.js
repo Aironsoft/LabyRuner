@@ -28,10 +28,10 @@ Game.users = [];
 
 io.sockets.on('connection', function (client) {
     
-    //if (Game.rooms === undefined)
-    //    Game.rooms = [];
-    //else if (Game.users.indexOf(client) == -1)//если такого игрока нет в списке
-    //    Game.users.push(client);//добавляем нового игрока
+    if (Game.users === undefined)
+        Game.users = [];
+    else if (Game.users.indexOf(client) == -1)//если такого игрока нет в списке
+        Game.users.push(client);//добавляем нового игрока
     
     
     client.on('req_room', function () {
@@ -64,7 +64,13 @@ io.sockets.on('connection', function (client) {
         try {
             io.sockets.in(Game.rooms[client.id].name).emit('message', message);
           //  client.broadcast.emit('message', message);
-        } catch (e) {
+        }
+        catch (e) {
+            //если пользователь уходит, то удалить его из списка
+            userId = Game.users.indexOf(client);
+            if (userId != -1)
+                delete Game.users[userId];
+
             console.log(e);
             client.disconnect();
         }
@@ -92,14 +98,3 @@ io.sockets.on('connection', function (client) {
     //});
 
 });
-//io.sockets.on('connection', function (client) {
-//    client.on('message', function (message) {
-//        try {
-//            client.emit('message', message);
-//            client.broadcast.emit('message', message);
-//        } catch (e) {
-//            console.log(e);
-//            client.disconnect();
-//        }
-//    });
-//});

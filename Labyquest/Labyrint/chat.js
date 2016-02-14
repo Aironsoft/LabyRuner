@@ -117,6 +117,26 @@ $(document).ready(function () {
                         .scrollTop(messages[0].scrollHeight);
     }
     
+    
+    
+    socket.on('stats', function (arr) {
+        var stats = $('#stats');
+        stats.find('div').not('.turn').remove();
+        //for (val in arr) {
+        //    stats.prepend($('<div/>').attr('class', 'ui-state-hover ui-corner-all').html(arr[val]));
+        //}
+        
+        var m = '<div class="msg">' +
+                    '<span class="user">' + arr[0] + '.</span> ' 
+                        + arr[1] + '.</span> ' 
+                        + arr[2] + '.</span> ' 
+                        + arr[3] + '.' 
+                        + '</div>';
+        stats
+                    .append(m)
+    });
+
+    
     socket.on('connecting', function () {
         socket.emit('req_room', '');
         msg_system('Соединение...');
@@ -159,23 +179,23 @@ $(document).ready(function () {
     });
     
     
-    //// Статистика
-    //socket.on('stats', function (arr) {
-    //    var stats = $('#stats');
-    //    stats.find('div').not('.turn').remove();
-    //    //for (val in arr) {
-    //    //    stats.prepend($('<div/>').attr('class', 'ui-state-hover ui-corner-all').html(arr[val]));
-    //    //}
+    // Статистика
+    socket.on('stats', function (arr) {
+        var stats = $('#stats');
+        stats.find('div').not('.turn').remove();
+        //for (val in arr) {
+        //    stats.prepend($('<div/>').attr('class', 'ui-state-hover ui-corner-all').html(arr[val]));
+        //}
     
-    //    var m = '<div class="msg">' +
-    //                '<span class="user">' + arr[0] + '.</span> ' 
-    //                    + arr[1] + '.</span> ' 
-    //                    + arr[2] + '.</span> ' 
-    //                    + arr[3] + '.'
-    //                    + '</div>';
-    //    stats
-    //                .append(m)
-    //});
+        var m = '<div class="msg">' +
+                    '<span class="user">' + arr[0] + '.</span> ' 
+                        + arr[1] + '.</span> ' 
+                        + arr[2] + '.</span> ' 
+                        + arr[3] + '.'
+                        + '</div>';
+        stats
+                    .append(m)
+    });
     
     
     function safe(str) {
