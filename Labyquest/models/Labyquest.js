@@ -37,8 +37,7 @@ var Room = module.exports = function (name) {
     //        clients.push(client);
     //};
     
-    this.hasPlace = function () {
-        
+    this.hasPlace = function () {        
         return this.clients.length < 2;
     }
 }

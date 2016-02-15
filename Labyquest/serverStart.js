@@ -50,20 +50,21 @@ io.sockets.on('connection', function (client) {
         Game.rooms[client.id] = Game.incompleateRoom;
         
         console.log("client id=" + client.id + "  incompleateRoom.name=" + Game.incompleateRoom.name);
-
+        
+        //если в неполной комнате не осталось свободных мест
         if (!Game.incompleateRoom.hasPlace()) {
             console.log("has no place");
-            io.sockets.in(Game.incompleateRoom.name).emit('compleate_room', '');
-            Game.incompleateRoom = null;
+            io.sockets.in(Game.incompleateRoom.name).emit('compleate_room', '');//послать всем участникам комнаты сообщение, что их комната заполнена
+            Game.incompleateRoom = null;//и отметить, что неполной комнаты нет
             
         }
     });
     
     
-    client.on('message', function (message) {
+    client.on('message', function (message) {//если от клиента пришло сообщение
         try {
-            io.sockets.in(Game.rooms[client.id].name).emit('message', message);
-          //  client.broadcast.emit('message', message);
+            io.sockets.in(Game.rooms[client.id].name).emit('message', message);//отправить это сообщение всем членам его комнаты
+          //  client.broadcast.emit('message', message); //отправить всем, кроме отправителя
         }
         catch (e) {
             //если пользователь уходит, то удалить его из списка
