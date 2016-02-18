@@ -30,9 +30,39 @@
     function buildMaze(data) {
         var m = '<div class="msg system">'+data.length + '</div>';
         
-        var mazefield = $("#mazefield");
-        mazefield
-                        .append(m)
+        var l = '<div class="grid"></div>';
+
+        for (var i = 0; i < data.length; i++) { //сначала задаются строки
+            
+            var row = '<div class="row" id="row_' + i + '">';
+
+            for (var j = 0; j < data[0].length; j++) {
+                var cell = '<div class="cell'; //* class="cell
+                if (data[i][j].has_way)
+                    cell += ' in';
+                if (data[i][j].north)
+                    cell += ' n';
+                if (data[i][j].west)
+                    cell += ' w';
+                if (data[i][j].south)
+                    cell += ' s';
+                if (data[i][j].east)
+                    cell += ' e';
+                
+                cell += '"></div>';
+
+                row += cell;
+            }
+
+            row += '</div>'
+
+            l += row;
+        }
+
+        var maze = $("#maze");
+        maze
+                        .addClass("large")// добавим этой копии класс newElement
+                        .append(l)
                         .scrollTop(messages[0].scrollHeight);
     }
     

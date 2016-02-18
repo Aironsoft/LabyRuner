@@ -279,24 +279,28 @@ var GenerateMaze = function (rows, columns) {
     this.goToNextPoint = function () {
         switch (course) {
             case 'west':
-                thisPoint.X -= 1;
                 maze[thisPoint.X][thisPoint.Y].west = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
+                thisPoint.X -= 1;
+                maze[thisPoint.X][thisPoint.Y].east = true;//обратный путь
                 return;
             case 'east':
-                thisPoint.X += 1;
                 maze[thisPoint.X][thisPoint.Y].east = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
+                thisPoint.X += 1;
+                maze[thisPoint.X][thisPoint.Y].west = true;
                 return;
             case 'north':
-                thisPoint.Y -= 1;
                 maze[thisPoint.X][thisPoint.Y].north = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
+                thisPoint.Y -= 1;
+                maze[thisPoint.X][thisPoint.Y].south = true;
                 return;
             case 'south':
-                thisPoint.Y += 1;
                 maze[thisPoint.X][thisPoint.Y].south = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
+                thisPoint.Y += 1;
+                maze[thisPoint.X][thisPoint.Y].north = true;
                 return;
         }
     }
