@@ -39,6 +39,7 @@
     <Content Include="mazes\css\mazepage.css" />
     <Content Include="mazes\css\mazes.css" />
     <Content Include="mazes\maze.html" />
+    <Content Include="mazes\maze2.html" />
     <Content Include="static\favicon.ico" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
     <Content Include="Labyrint\clientStart.html" />
@@ -61,7 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Labyrint\Libs\jquery.min.js" />
+    <Compile Include="Labyrint\Libs\require.js" />
     <Compile Include="Labyrint\Libs\socket.io.js" />
+    <Compile Include="mazes\mazes.js" />
     <Compile Include="serverStart.js" />
     <Compile Include="Labyrint\chat.js" />
     <Compile Include="mazes\js\mazes.js" />

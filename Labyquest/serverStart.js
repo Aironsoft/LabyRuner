@@ -55,6 +55,10 @@ io.sockets.on('connection', function (client) {
         if (!Game.incompleateRoom.hasPlace()) {
             console.log("has no place");
             io.sockets.in(Game.incompleateRoom.name).emit('compleate_room', '');//послать всем участникам комнаты сообщение, что их комната заполнена
+            
+            var Maze = Game.GenerateMaze(7, 7);//генерация лабиринта
+            io.sockets.in(Game.incompleateRoom.name).emit('maze', 'Maze');
+
             Game.incompleateRoom = null;//и отметить, что неполной комнаты нет
             
         }
