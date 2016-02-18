@@ -101,3 +101,13 @@ body
 .maze .operations { clear: both; text-align: center; padding-top: 5px; }
 .maze .operations a { padding: 0px 5px; color: #00f; }
 .maze .operations a.disabled { color: #777; }
+
+
+.mazefield
+{
+	padding: 0 0 20px 20px;
+	display: inline-block;
+	width: 80vmin;
+	height: 80vmin;
+	background-color: aaa;
+}
