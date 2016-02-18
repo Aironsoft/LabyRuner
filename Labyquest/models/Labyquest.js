@@ -98,16 +98,17 @@ var Cell = function (is_blocked) {
 util.inherits(Cell, EventEmitter);
 
 
-function mazeArray(rows, columns) {
-    var arr = new Array();
-    for (var i = 0; i < columns; i++) { //сначала задаются столбцы
-        arr[i] = new Array();
-        for (var j = 0; j < rows; j++) {
-            arr[i][j] = new Cell(false);
-        }
-    }
-    return arr;
-}
+//function mazeArray(rows, columns) {
+//    var arr = new Array();
+//    for (var i = 0; i < columns; i++) { //сначала задаются столбцы
+//        arr[i] = new Array();
+//        for (var j = 0; j < rows; j++)
+//            var cell = { is_blocked: false, north: false, west: false, south: false, east: false, has_way: false};
+//            arr[i][j] = cell;
+//        }
+//    }
+//    return arr;
+//}
 
 
 Labyquest.prototype.GenerateMaze = function (rows, columns) {

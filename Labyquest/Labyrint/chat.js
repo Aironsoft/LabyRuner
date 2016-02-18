@@ -27,6 +27,16 @@
     }
     
     
+    function buildMaze(data) {
+        var m = '<div class="msg system">'+data.length + '</div>';
+        
+        var mazefield = $("#mazefield");
+        mazefield
+                        .append(m)
+                        .scrollTop(messages[0].scrollHeight);
+    }
+    
+
     
     socket.on('stats', function (arr) {
         var stats = $('#stats');
@@ -92,6 +102,7 @@
     socket.on('maze', function (data) {
         Maze = data;
         msg_system('Лабиринт получен');
+        buildMaze(data);
     });
 
     
