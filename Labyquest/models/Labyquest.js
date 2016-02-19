@@ -32,6 +32,8 @@ util.inherits(Labyquest, EventEmitter);
 var Room = module.exports = function (name) {
 
     EventEmitter.call(this);// Инициализируем события
+    
+    this.Maze = null;
 
     this.name = name;
     var clients = this.clients = [] ///var clients = this.clients = []
