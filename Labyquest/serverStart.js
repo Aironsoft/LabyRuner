@@ -150,29 +150,25 @@ var GenerateMaze = function (rows, columns) {
     this.goToNextPoint = function () {
         switch (course) {
             case 'west':
-                maze[thisPoint.X][thisPoint.Y].west = true;
-                //maze[thisPoint.X][thisPoint.Y].has_way = true;
-                thisPoint.X -= 1;
+                maze[thisPoint.X][thisPoint.Y].west = true; //прописывает в текущую, что движется на запад
+                thisPoint.X -= 1; //переход в следующую клетку (на запад)
                 maze[thisPoint.X][thisPoint.Y].east = true;//обратный путь
-                maze[thisPoint.X][thisPoint.Y].has_way = true;
+                maze[thisPoint.X][thisPoint.Y].has_way = true; //указать, что клетка, в которую совершён переход, имеет путь
                 return;
             case 'east':
                 maze[thisPoint.X][thisPoint.Y].east = true;
-                //maze[thisPoint.X][thisPoint.Y].has_way = true;
                 thisPoint.X += 1;
                 maze[thisPoint.X][thisPoint.Y].west = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
                 return;
             case 'north':
                 maze[thisPoint.X][thisPoint.Y].north = true;
-                //maze[thisPoint.X][thisPoint.Y].has_way = true;
                 thisPoint.Y -= 1;
                 maze[thisPoint.X][thisPoint.Y].south = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
                 return;
             case 'south':
                 maze[thisPoint.X][thisPoint.Y].south = true;
-                //maze[thisPoint.X][thisPoint.Y].has_way = true;
                 thisPoint.Y += 1;
                 maze[thisPoint.X][thisPoint.Y].north = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
