@@ -255,7 +255,7 @@ io.sockets.on('connection', function (client) {
             //console.log("Лабиринт создан");
             
             if (Game.rooms[client.id].Maze == null || Game.rooms[client.id].Maze == undefined) {
-                Game.rooms[client.id].Maze = GenerateMaze(7, 7);//генерация лабиринта
+                Game.rooms[client.id].Maze = GenerateMaze(40, 40);//генерация лабиринта
                 console.log("Лабиринт создан");
             }
             io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[client.id].Maze);
@@ -290,18 +290,5 @@ io.sockets.on('connection', function (client) {
         'Сейчас игр: ' + Object.keys(Game.rooms).length,
         'Сейчас играет: ' + Object.keys(Game.users).length
     ]);
-
-    //client.on('message', function (message) {
-    //    try {
-    //        client.emit('message', message);
-    //        client.broadcast.emit('message', message);
-    //    } catch (e) {
-    //        userId = Game.users.indexOf(client);
-    //        if (userId != -1)
-    //            delete Game.users[userId];
-    //        console.log(e);
-    //        client.disconnect();
-    //    }
-    //});
 
 });
