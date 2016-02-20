@@ -151,29 +151,25 @@ var GenerateMaze = function (rows, columns) {
     this.goToNextPoint = function () {
         switch (course) {
             case 'west':
-                maze[thisPoint.X][thisPoint.Y].west = true;
-                //maze[thisPoint.X][thisPoint.Y].has_way = true;
-                thisPoint.X -= 1;
+                maze[thisPoint.X][thisPoint.Y].west = true; //прописывает в текущую, что движется на запад
+                thisPoint.X -= 1; //переход в следующую клетку (на запад)
                 maze[thisPoint.X][thisPoint.Y].east = true;//обратный путь
-                maze[thisPoint.X][thisPoint.Y].has_way = true;
+                maze[thisPoint.X][thisPoint.Y].has_way = true; //указать, что клетка, в которую совершён переход, имеет путь
                 return;
             case 'east':
                 maze[thisPoint.X][thisPoint.Y].east = true;
-                //maze[thisPoint.X][thisPoint.Y].has_way = true;
                 thisPoint.X += 1;
                 maze[thisPoint.X][thisPoint.Y].west = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
                 return;
             case 'north':
                 maze[thisPoint.X][thisPoint.Y].north = true;
-                //maze[thisPoint.X][thisPoint.Y].has_way = true;
                 thisPoint.Y -= 1;
                 maze[thisPoint.X][thisPoint.Y].south = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
                 return;
             case 'south':
                 maze[thisPoint.X][thisPoint.Y].south = true;
-                //maze[thisPoint.X][thisPoint.Y].has_way = true;
                 thisPoint.Y += 1;
                 maze[thisPoint.X][thisPoint.Y].north = true;
                 maze[thisPoint.X][thisPoint.Y].has_way = true;
@@ -258,7 +254,7 @@ io.sockets.on('connection', function (client) {
 
             
             if (Game.rooms[client.id].Maze == null || Game.rooms[client.id].Maze == undefined) {
-                Game.rooms[client.id].Maze = GenerateMaze(7, 7);//генерация лабиринта
+                Game.rooms[client.id].Maze = GenerateMaze(40, 40);//генерация лабиринта
                 console.log("Лабиринт создан");
             }
             io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[client.id].Maze);
@@ -325,18 +321,5 @@ io.sockets.on('connection', function (client) {
         'Сейчас игр: ' + Object.keys(Game.rooms).length,
         'Сейчас играет: ' + Object.keys(Game.users).length
     ]);
-
-    //client.on('message', function (message) {
-    //    try {
-    //        client.emit('message', message);
-    //        client.broadcast.emit('message', message);
-    //    } catch (e) {
-    //        userId = Game.users.indexOf(client);
-    //        if (userId != -1)
-    //            delete Game.users[userId];
-    //        console.log(e);
-    //        client.disconnect();
-    //    }
-    //});
 
 });
