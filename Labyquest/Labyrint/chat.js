@@ -164,11 +164,13 @@
     //координаты игроков
     socket.on('self_move', function (data) {
         onMoveUpdate(player, data);
+        player = data;
     });
     
     //координаты игроков
     socket.on('enemy_move', function (data) {
         onMoveUpdate(enemy, data);
+        enemy = data
     });
 
     
@@ -233,8 +235,8 @@
             default: break;
 
         }
-        if (!dx || !dy) {
-            sendMove(player["x"] + dx, player["y"] + dy);
+        if (dx || dy) {
+            sendMove(player["x"] + dy, player["y"] + dx);
             setTimeout(buttonDownIteration, 100);
         }
 
@@ -260,6 +262,7 @@
 
     function onMoveUpdate(oldPosition, newPosition) {
         
+
 
         var cell = null;
         var newClassNames = "";
