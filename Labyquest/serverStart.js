@@ -40,10 +40,6 @@ var Cell = function (is_blocked) {
     this.east = false;
     
     this.has_way = false;
-	
-	//this.hasPlace = function () {        
-    //    return this.clients.length < 2;
-    //}
 }
 
 
@@ -80,7 +76,6 @@ var GenerateMaze = function (rows, columns) {
         if (selectedPoint.X > 0) {
             if (!maze[selectedPoint.X - 1][selectedPoint.Y].has_way) //если через ячейку слева не проложен путь
             {
-                //west_able = true;
                 able_ways.push("west");
             }
         }
@@ -88,7 +83,6 @@ var GenerateMaze = function (rows, columns) {
         if (selectedPoint.X < columns - 1) {
             if (!maze[selectedPoint.X + 1][selectedPoint.Y].has_way) //если через ячейку справа не проложен путь
             {
-                //east_able = true;
                 able_ways.push("east");
             }
         }
@@ -96,7 +90,6 @@ var GenerateMaze = function (rows, columns) {
         if (selectedPoint.Y > 0) {
             if (!maze[selectedPoint.X][selectedPoint.Y - 1].has_way) //если через ячейку сверху не проложен путь
             {
-                //north_able = true;
                 able_ways.push("north");
             }
         }
@@ -104,7 +97,6 @@ var GenerateMaze = function (rows, columns) {
         if (selectedPoint.Y < rows - 1) {
             if (!maze[selectedPoint.X][selectedPoint.Y + 1].has_way) //если через ячейку снизу не проложен путь
             {
-                //south_able = true;
                 able_ways.push("south");
             }
         }
@@ -130,7 +122,7 @@ var GenerateMaze = function (rows, columns) {
             case 0:
                 for (var i = 0; i < columns; i++) {
                     for (var j = 0; j < rows; j++) {
-                        if (!maze[i][j].has_way) { //если ячейка имеет путь
+                        if (maze[i][j].has_way) { //если ячейка имеет путь
                             if (this.nextCourse(new Point(i, j)) != null) {    //и свободные клетки по соседству                            
                                 var np = new Point();
                                 np.X = i;
