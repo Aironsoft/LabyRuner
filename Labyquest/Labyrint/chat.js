@@ -1,102 +1,11 @@
-﻿//$(document).ready(function () {
-//    var socket = io.connect('http://localhost:8008');
-//    var name = 'Игрок_' + (Math.round(Math.random() * 10000));
-//    var messages = $("#messages");
-//    var message_txt = $("#message_text")
-//    $('.chat .nick').text(name);
-    
-//    function msg(nick, message) {
-//        var m = '<div class="msg">' +
-//                    '<span class="user">' + safe(nick) + ':</span> ' 
-//                    + safe(message) +
-//                    '</div>';
-//        messages
-//                    .append(m)
-//                    .scrollTop(messages[0].scrollHeight);
-//    }
-    
-//    function msg_system(message) {
-//        var m = '<div class="msg system">' + safe(message) + '</div>';
-//        messages
-//                    .append(m)
-//                    .scrollTop(messages[0].scrollHeight);
-//    }
-    
-//    socket.on('connecting', function () {
-//        msg_system('Соединение...');
-//    });
-    
-//    socket.on('connect', function () {
-//        msg_system('Соединение установлено!');
-//    });
-    
-//    socket.on('reconnect', function () {
-//        $('#reload').show();
-//        $('#connect-status').html('Переподключились, продолжайте игру');
-//        _gaq.push(['_trackEvent', 'WebSocket', 'Reconnect']);
-//    });
-//    socket.on('reconnecting', function () {
-//        $('#reload').hide();
-//        $('#status').html('Соединение с сервером потеряно, переподключаемся...');
-//        _gaq.push(['_trackEvent', 'WebSocket', 'Reconnecting']);
-//    });
-    
-//    socket.on('disconnect', function () {
-//        // Если один из игроков отключился, посылаем об этом сообщение второму
-//        // Отключаем обоих от игры и удаляем её, освобождаем память
-//        Game.end(socket.id.toString(), function (gameId, opponent) {
-//            io.sockets.socket(opponent).emit('exit');
-//            closeRoom(gameId, opponent);
-//        });
-//        console.log('%s: %s - disconnected', socket.id.toString(), socket.handshake.address.address);
-//    });
-
-//    socket.on('message', function (data) {
-//        msg(data.name, data.message);
-//        message_txt.focus();
-//    });
-    
-//    $("#message_btn").click(function () {
-//        var text = $("#message_text").val();
-//        if (text.length <= 0)
-//            return;
-//        message_txt.val("");
-//        socket.emit("message", { message: text, name: name });
-//    });
-    
-    
-//    // Статистика
-//    socket.on('stats', function (arr) {
-//        var stats = $('#stats');
-//        stats.find('div').not('.turn').remove();
-//        //for (val in arr) {
-//        //    stats.prepend($('<div/>').attr('class', 'ui-state-hover ui-corner-all').html(arr[val]));
-//        //}
-
-//        var m = '<div class="msg">' +
-//                    '<span class="user">' + arr[0] + '.</span> ' 
-//                     + arr[1] + '.</span> ' 
-//                     + arr[2] + '.</span> ' 
-//                     + arr[3] + '.'
-//                      + '</div>';
-//        stats
-//                    .append(m)
-//    });
-
-    
-//    function safe(str) {
-//        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-//    }
-
-//});
-
-
-$(document).ready(function () {
+﻿$(document).ready(function () {
     var socket = io.connect('http://localhost:8008');
     var name = 'Игрок_' + (Math.round(Math.random() * 10000));
     var messages = $("#messages");
     var message_txt = null;
-    var room = null;
+    var room = null;    
+    var Maze = null;
+
     
     $('.chat .nick').text(name);
     
@@ -118,6 +27,46 @@ $(document).ready(function () {
     }
     
     
+    function buildMaze(data) {
+        var m = '<div class="msg system">'+data.length + '</div>';
+        
+        var l = '<div class="grid"></div>';
+
+        for (var i = 0; i < data.length; i++) { //сначала задаются строки
+            
+            var row = '<div class="row" id="row_' + i + '">';
+
+            for (var j = 0; j < data[0].length; j++) {
+                var cell = '<div class="cell'; //* class="cell
+                if (data[i][j].has_way)
+                    cell += ' in';
+                if (data[i][j].north)
+                    cell += ' n';
+                if (data[i][j].west)
+                    cell += ' w';
+                if (data[i][j].south)
+                    cell += ' s';
+                if (data[i][j].east)
+                    cell += ' e';
+                
+                cell += '"></div>';
+
+                row += cell;
+            }
+
+            row += '</div>'
+
+            l += row;
+        }
+
+        var maze = $("#maze");
+        maze
+                        .addClass("large")// добавим этой копии класс newElement
+                        .append(l)
+                        .scrollTop(messages[0].scrollHeight);
+    }
+    
+
     
     socket.on('stats', function (arr) {
         var stats = $('#stats');
@@ -178,6 +127,14 @@ $(document).ready(function () {
                                 
     });
     
+    
+    //Получен лабиринт
+    socket.on('maze', function (data) {
+        Maze = data;
+        msg_system('Лабиринт получен');
+        buildMaze(data);
+    });
+
     
     // Статистика
     socket.on('stats', function (arr) {

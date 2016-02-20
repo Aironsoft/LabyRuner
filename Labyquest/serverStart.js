@@ -13,6 +13,195 @@ var io = require('socket.io').listen(server, options);
 var Labyquest = require('./models/Labyquest.js');//получение модели лабиринта
 var Room = require('./models/Labyquest.js');//получение модели комнаты
 
+var Maze = null;
+
+
+
+
+var Point = function () // (rows, columns)
+{
+    this.X = -1;
+    this.Y = -1;
+}
+
+var Point = function (x, y) // (rows, columns)
+{    
+    this.X = x;
+    this.Y = y;
+}
+
+
+var Cell = function (is_blocked) {
+    this.is_blocked = is_blocked;
+    
+    this.north = false;
+    this.west = false;
+    this.south = false;
+    this.east = false;
+    
+    this.has_way = false;
+}
+
+
+var mazeArray = function (rows, columns) {
+    var arr = new Array();
+    for (var i = 0; i < columns; i++) { //сначала задаются столбцы
+        arr[i] = new Array();
+        for (var j = 0; j < rows; j++) {
+            var cell = { is_blocked: false, north: false, west: false, south: false, east: false, has_way: false }
+            arr[i][j] = cell;
+        }
+    }
+    return arr;
+}
+
+
+var GenerateMaze = function (rows, columns) {
+    
+    var thisPoint = new Point();
+    thisPoint.X = Math.round(Math.random() *( columns - 1));
+    thisPoint.Y = Math.round(Math.random() *( rows - 1));
+    //EventEmitter.call(this);// Инициализируем события
+    
+    var maze = mazeArray(rows, columns);
+    
+    
+    
+    /**
+     Выбор направления
+    **/
+	this.nextCourse = function (selectedPoint) {
+        var able_ways = new Array();
+        
+        if (selectedPoint.X > 0) {
+            if (!maze[selectedPoint.X - 1][selectedPoint.Y].has_way) //если через ячейку слева не проложен путь
+            {
+                able_ways.push("west");
+            }
+        }
+        
+        if (selectedPoint.X < columns - 1) {
+            if (!maze[selectedPoint.X + 1][selectedPoint.Y].has_way) //если через ячейку справа не проложен путь
+            {
+                able_ways.push("east");
+            }
+        }
+        
+        if (selectedPoint.Y > 0) {
+            if (!maze[selectedPoint.X][selectedPoint.Y - 1].has_way) //если через ячейку сверху не проложен путь
+            {
+                able_ways.push("north");
+            }
+        }
+        
+        if (selectedPoint.Y < rows - 1) {
+            if (!maze[selectedPoint.X][selectedPoint.Y + 1].has_way) //если через ячейку снизу не проложен путь
+            {
+                able_ways.push("south");
+            }
+        }
+        
+        if (able_ways.length > 0) {
+            var r = Math.round(Math.random() * (able_ways.length - 1));//выбор направления к следующей доступной ячейке
+            
+            return able_ways[r];//вернуть направление
+        }
+        else { //если нет доступных для выбора ячеек
+            return null;//
+        }
+    }
+
+    
+    var selectNewStartWay = 0;
+    /**
+     Поиск начала для новой ветки
+    **/
+    this.selectNewStart = function () {
+        var np = null;
+        switch (selectNewStartWay) {
+            case 0:
+                for (var i = 0; i < columns; i++) {
+                    for (var j = 0; j < rows; j++) {
+                        if (maze[i][j].has_way) { //если ячейка имеет путь
+                            if (this.nextCourse(new Point(i, j)) != null) {    //и свободные клетки по соседству                            
+                                var np = new Point();
+                                np.X = i;
+                                np.Y = j;
+                            }
+                        }
+                    }
+                }
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+        }
+        
+        return np;
+    }
+    
+    
+    /**
+     Переход к следующей точке по направлению
+    **/
+    this.goToNextPoint = function () {
+        switch (course) {
+            case 'west':
+                maze[thisPoint.X][thisPoint.Y].west = true;
+                //maze[thisPoint.X][thisPoint.Y].has_way = true;
+                thisPoint.X -= 1;
+                maze[thisPoint.X][thisPoint.Y].east = true;//обратный путь
+                maze[thisPoint.X][thisPoint.Y].has_way = true;
+                return;
+            case 'east':
+                maze[thisPoint.X][thisPoint.Y].east = true;
+                //maze[thisPoint.X][thisPoint.Y].has_way = true;
+                thisPoint.X += 1;
+                maze[thisPoint.X][thisPoint.Y].west = true;
+                maze[thisPoint.X][thisPoint.Y].has_way = true;
+                return;
+            case 'north':
+                maze[thisPoint.X][thisPoint.Y].north = true;
+                //maze[thisPoint.X][thisPoint.Y].has_way = true;
+                thisPoint.Y -= 1;
+                maze[thisPoint.X][thisPoint.Y].south = true;
+                maze[thisPoint.X][thisPoint.Y].has_way = true;
+                return;
+            case 'south':
+                maze[thisPoint.X][thisPoint.Y].south = true;
+                //maze[thisPoint.X][thisPoint.Y].has_way = true;
+                thisPoint.Y += 1;
+                maze[thisPoint.X][thisPoint.Y].north = true;
+                maze[thisPoint.X][thisPoint.Y].has_way = true;
+                return;
+        }
+    }
+    
+    
+    maze[thisPoint.X][thisPoint.Y].has_way = true;
+    
+    
+    while (thisPoint != null) {
+        
+        var course = this.nextCourse(thisPoint);
+        while (course != null) {
+            this.goToNextPoint();
+            course = this.nextCourse(thisPoint);
+        }
+        
+        thisPoint = this.selectNewStart();
+    }
+    
+    return maze;
+}
+
+
+
+
+
 server.listen(PORT);
 
 app.use('/static', express.static(__dirname + '/static'));
@@ -25,6 +214,11 @@ app.get('/', function (req, res) {
 var countGames = 0, countPlayers = [], Game = new Labyquest();
 Game.rooms = [];
 Game.users = [];
+
+
+/////
+
+
 
 io.sockets.on('connection', function (client) {
     
@@ -55,6 +249,18 @@ io.sockets.on('connection', function (client) {
         if (!Game.incompleateRoom.hasPlace()) {
             console.log("has no place");
             io.sockets.in(Game.incompleateRoom.name).emit('compleate_room', '');//послать всем участникам комнаты сообщение, что их комната заполнена
+            
+            //Maze = GenerateMaze(7, 7);//генерация лабиринта
+            //Game.incompleateRoom.Maze = Maze;
+            //console.log("Лабиринт создан");
+            
+            if (Game.rooms[client.id].Maze == null || Game.rooms[client.id].Maze == undefined) {
+                Game.rooms[client.id].Maze = GenerateMaze(7, 7);//генерация лабиринта
+                console.log("Лабиринт создан");
+            }
+            io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[client.id].Maze);
+            console.log("Лабиринт "+ Game.rooms[client.id].Maze+ "передан");
+
             Game.incompleateRoom = null;//и отметить, что неполной комнаты нет
             
         }
