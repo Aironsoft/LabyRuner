@@ -85,6 +85,10 @@
     background: #fff;
 }
 
+.cursor {
+    background: red;
+}
+
 .cell
 {
     border: 4px solid black;

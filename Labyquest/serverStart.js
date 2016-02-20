@@ -18,6 +18,7 @@ var Maze = null;
 
 
 
+
 var Point = function () // (rows, columns)
 {
     this.X = -1;
@@ -218,7 +219,7 @@ Game.users = [];
 
 /////
 
-
+var rows=7, cols =7;
 
 io.sockets.on('connection', function (client) {
     
@@ -240,7 +241,7 @@ io.sockets.on('connection', function (client) {
         client.emit('room', Game.incompleateRoom.name);
         
         if (Game.rooms == undefined)
-            Game.rooms = [];
+            Game.rooms = {};
         Game.rooms[client.id] = Game.incompleateRoom;
         
         console.log("client id=" + client.id + "  incompleateRoom.name=" + Game.incompleateRoom.name);
@@ -254,19 +255,53 @@ io.sockets.on('connection', function (client) {
             //Game.incompleateRoom.Maze = Maze;
             //console.log("Лабиринт создан");
             
+
+            
             if (Game.rooms[client.id].Maze == null || Game.rooms[client.id].Maze == undefined) {
                 Game.rooms[client.id].Maze = GenerateMaze(7, 7);//генерация лабиринта
                 console.log("Лабиринт создан");
             }
             io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[client.id].Maze);
-            console.log("Лабиринт "+ Game.rooms[client.id].Maze+ "передан");
+            console.log("Лабиринт " + Game.rooms[client.id].Maze + "передан");
+            
+            var x = Math.round(Math.random() * (cols - 1));
+            var y = Math.round(Math.random() * (rows - 1));
+            
+            var players =[ { 'x': x, 'y': y }];
+
+            var x2 = Math.round(Math.random() * (cols - 1));
+            var y2 = Math.round(Math.random() * (rows - 1));
+
+            while (x2 === x && y2 === y) {
+                x2 = Math.round(Math.random() * (cols - 1));
+                y2 = Math.round(Math.random() * (rows - 1));
+            }
+            
+            players.push({ 'x': x2, 'y': y2 });
+            var i = 0;
+            Game.incompleateRoom.clients.forEach(function (c,i,a) {
+                c.emit('self_spawn', players[i]);
+                c.broadcast.in(Game.incompleateRoom.name).emit('enemy_spawn', players[i]);
+                c.coords = players[i];
+                
+            });
+
 
             Game.incompleateRoom = null;//и отметить, что неполной комнаты нет
             
         }
     });
     
-    
+    client.on('moving', function (data) {
+        var room = Game.rooms[client.id];
+
+        client.coords = data;
+        
+        client.emit('self_move', data);
+        client.broadcast.in(Game.rooms[client.id].name).emit('enemy_move', data);
+
+    });
+
     client.on('message', function (message) {//если от клиента пришло сообщение
         try {
             io.sockets.in(Game.rooms[client.id].name).emit('message', message);//отправить это сообщение всем членам его комнаты

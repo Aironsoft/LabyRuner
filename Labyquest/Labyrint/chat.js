@@ -5,6 +5,12 @@
     var message_txt = null;
     var room = null;    
     var Maze = null;
+    var player = null;
+    var enemy = null;
+    var idPrefix = "id"
+    var downButton = 0;
+    var width = 7;
+    var height = 7;
 
     
     $('.chat .nick').text(name);
@@ -28,6 +34,10 @@
     
     
     function buildMaze(data) {
+        
+        height = data.length
+        width = data[0].length
+
         var m = '<div class="msg system">'+data.length + '</div>';
         
         var l = '<div class="grid"></div>';
@@ -37,7 +47,7 @@
             var row = '<div class="row" id="row_' + i + '">';
 
             for (var j = 0; j < data[0].length; j++) {
-                var cell = '<div class="cell'; //* class="cell
+                var cell = '<div id="'+ idPrefix + j + "x" + i + '" class="cell'; //* class="cell
                 if (data[i][j].has_way)
                     cell += ' in';
                 if (data[i][j].north)
@@ -134,6 +144,32 @@
         msg_system('Лабиринт получен');
         buildMaze(data);
     });
+    
+    //координаты игрока
+    socket.on('self_spawn', function (data) {
+        player = data;
+        msg_system('spawn self');
+        onMoveUpdate(null, data);
+    });
+    
+    //координаты врага
+    socket.on('enemy_spawn', function (data) {
+        enemy = data;
+        msg_system('spawn self');
+        onMoveUpdate(null, data);
+    });
+    
+    
+   
+    //координаты игроков
+    socket.on('self_move', function (data) {
+        onMoveUpdate(player, data);
+    });
+    
+    //координаты игроков
+    socket.on('enemy_move', function (data) {
+        onMoveUpdate(enemy, data);
+    });
 
     
     // Статистика
@@ -154,8 +190,98 @@
                     .append(m)
     });
     
+    $(document).keyup(function (e) {
+        if (e.keyCode === downButton) {
+            downButton = 0;
+        }
+        
+    });
+    
+    $(document).keydown(function (e) {
+        if (e.keyCode <= 40 && e.keyCode >= 37) {
+            downButton = e.keyCode;
+        }
+        buttonDownIteration();
+    });
+    
+   
+    
+    
+    
+    function buttonDownIteration() {
+        
+        if (!downButton)
+            return;
+        var dx=0, dy=0;
+        switch ( downButton ) { 
+            case 37:
+                if (verify(-1, 0, player))
+                    dx = -1;
+                break;
+            case 38:
+                if (verify(0, -1, player))
+                    dy = -1;
+                break;
+            case 39:
+                if (verify(1, 0, player))
+                    dx = 1;
+                break;
+            case 40:
+                if (verify(0, 1, player))
+                    dy = 1;
+                break;
+            default: break;
+
+        }
+        if (!dx || !dy) {
+            sendMove(player["x"] + dx, player["y"] + dy);
+            setTimeout(buttonDownIteration, 100);
+        }
+
+    }
+    
+    function verify(dx, dy, data) {
+        var x = data["x"] + dx;
+        var y = data["y"] + dy;
+        var res = 0 <= x && x < width && 0 <= y && y < height
+        cell = Maze[data["x"]][data["y"]];
+        return res;// && (dx > 0 && cell.east || dx < 0 && cell.west || dy > 0 && cell.south || dy < 0 && cell.north);
+    }
+    
+    function sendMove(x, y){
+        socket.emit("moving", { 'x': x, 'y': y });
+    }
+
+    
     
     function safe(str) {
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
+
+    function onMoveUpdate(oldPosition, newPosition) {
+        
+
+        var cell = null;
+        var newClassNames = "";
+        var classNames;
+         
+        if (oldPosition) {
+            classNames = (cell = $('#' + idPrefix + oldPosition['x'] + 'x' + oldPosition['y']))
+            .attr("class")
+            .split(' ');
+        
+            classNames.filter(function (elem) {return (elem && elem !== 'cursor'); });
+        
+            cell.attr('class', classNames.join(" "));
+        }
+        classNames = (cell = $('#' + idPrefix + newPosition['x'] + 'x' + newPosition['y']))
+        .attr("class") 
+        .split(' ');
+        classNames.filter(function (elem) { return (elem && elem !== 'cursor'); });
+        classNames.push("cursor");
+        
+        cell.attr('class', classNames.join(" "));
+
+    }
+
 });
