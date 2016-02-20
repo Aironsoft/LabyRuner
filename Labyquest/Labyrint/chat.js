@@ -149,27 +149,27 @@
     socket.on('self_spawn', function (data) {
         player = data;
         msg_system('spawn self');
-        onMoveUpdate(null, data);
+        onMoveUpdate(null, data, "player");
     });
     
     //координаты врага
     socket.on('enemy_spawn', function (data) {
         enemy = data;
         msg_system('spawn self');
-        onMoveUpdate(null, data);
+        onMoveUpdate(null, data, "enemy");
     });
     
     
    
     //координаты игроков
     socket.on('self_move', function (data) {
-        onMoveUpdate(player, data);
+        onMoveUpdate(player, data,"player");
         player = data;
     });
     
     //координаты игроков
     socket.on('enemy_move', function (data) {
-        onMoveUpdate(enemy, data);
+        onMoveUpdate(enemy, data,"enemy");
         enemy = data
     });
 
@@ -217,37 +217,37 @@
         var dx=0, dy=0;
         switch ( downButton ) { 
             case 37:
-                if (verify(-1, 0, player))
+                if (verify( 0, -1, player))
                     dx = -1;
                 break;
             case 38:
-                if (verify(0, -1, player))
+                if (verify( -1,0, player))
                     dy = -1;
                 break;
             case 39:
-                if (verify(1, 0, player))
+                if (verify(0, 1, player))
                     dx = 1;
                 break;
             case 40:
-                if (verify(0, 1, player))
+                if (verify(1, 0, player))
                     dy = 1;
                 break;
             default: break;
 
         }
-        if (dx || dy) {
+        if (dx != 0 || dy!=0) {
             sendMove(player["x"] + dy, player["y"] + dx);
-            setTimeout(buttonDownIteration, 100);
+            setTimeout(buttonDownIteration, 200);
         }
 
     }
     
     function verify(dx, dy, data) {
-        var x = data["x"] + dx;
-        var y = data["y"] + dy;
+        var y = data["x"] + dy;
+        var x = data["y"] + dx;
         var res = 0 <= x && x < width && 0 <= y && y < height
-        cell = Maze[data["x"]][data["y"]];
-        return res;// && (dx > 0 && cell.east || dx < 0 && cell.west || dy > 0 && cell.south || dy < 0 && cell.north);
+        cell = Maze[data["y"]][data["x"]];
+        return res && (dx < 0 && cell.north || dx > 0 && cell.south || dy < 0 && cell.west|| dy > 0 && cell.east);
     }
     
     function sendMove(x, y){
@@ -260,7 +260,7 @@
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    function onMoveUpdate(oldPosition, newPosition) {
+    function onMoveUpdate(oldPosition, newPosition, playerType) {
         
 
 
@@ -268,19 +268,19 @@
         var newClassNames = "";
         var classNames;
          
-        if (oldPosition) {
+        if (oldPosition!=null) {
             classNames = (cell = $('#' + idPrefix + oldPosition['x'] + 'x' + oldPosition['y']))
             .attr("class")
             .split(' ');
         
-            classNames.filter(function (elem) {return (elem && elem !== 'cursor'); });
-        
+            classNames = classNames.filter(function (elem) {return (elem && elem !== "cursor"); });
+            classNames.push(playerType)
             cell.attr('class', classNames.join(" "));
         }
         classNames = (cell = $('#' + idPrefix + newPosition['x'] + 'x' + newPosition['y']))
         .attr("class") 
         .split(' ');
-        classNames.filter(function (elem) { return (elem && elem !== 'cursor'); });
+        classNames = classNames.filter(function (elem) { return (elem && (elem !== "enemy" || elem !== "player" || elem !=="cursor")); });
         classNames.push("cursor");
         
         cell.attr('class', classNames.join(" "));
