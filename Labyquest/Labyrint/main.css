@@ -94,7 +94,15 @@
 }
 
 .cursor {
+    background: yellow;
+}
+
+.player {
     background: red;
+}
+
+.enemy {
+    background: green;
 }
 
 .cell
