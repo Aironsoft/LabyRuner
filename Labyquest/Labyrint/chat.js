@@ -88,12 +88,12 @@
     function quickMoveMe()
     {
         $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize, 'top': Me.posY - Me.Y * cellSideSize }, 50, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
-        $("#mazefield").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
+        //$("#mazefield").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
     }
     
     function stepMoveMe() {
         $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize, 'top': Me.posY - Me.Y * cellSideSize }, 500, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
-        $("#mazefield").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
+        //$("#mazefield").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
     }
 
     

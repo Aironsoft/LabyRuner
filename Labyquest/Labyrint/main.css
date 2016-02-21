@@ -8,8 +8,7 @@ body {
     position: static;
     display: table;
     width: 25vmax;
-    margin: 0 0 0 auto;
-    margin-right: 0px;
+    margin: 10px 30px 50px auto;
 }
 
 .demo {
