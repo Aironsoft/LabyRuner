@@ -317,39 +317,45 @@ io.sockets.on('connection', function (client) {
     
     client.on('moving', function (data) {
         
-        var obj = Game.rooms[client.id].ObjectDict[data.name];
-        var newPos = new Point(obj.X, obj.Y);
+        var dx = 0, dy = 0;
         
-        console.log("newPos = " + newPos);
+        var obj = Game.rooms[client.id].ObjectDict[data.name];
 
         switch (data.course) { 
             case "w":
-                newPos.X -= 1;
+                dx = -1;
+                break;
             case "n":
-                newPos.Y -= 1;
+                dy -= 1;
+                break;
             case "e":
-                newPos.X += 1;
+                dx += 1
+                break;
             case "s":
-                newPos.Y += 1;
+                dy += 1;
+                break;
         }
+        console.log("dx = " + dx);
 
-        if (Game.rooms[client.id].Positions[newPos.X][newPos.Y] == null)//если ячейка лабиринта, в которую запрашивается перемещение, пуста
+        if (Game.rooms[client.id].Positions[obj.X + dx][obj.Y + dy] == null)//если ячейка лабиринта, в которую запрашивается перемещение, пуста
         {
             console.log("Место для движения "+ data.course+" свободно");
             
-            io.sockets.in(Game.rooms[client.id].name).emit('moving', { name: data.name, x: newPos.X, y: newPos.Y })
+            io.sockets.in(Game.rooms[client.id].name).emit('moving', { name: data.name, x: obj.X+ dx, y: obj.Y+dy })
 
             var posObj = Game.rooms[client.id].Positions[obj.X][obj.Y];
-            posObj.X = newPos.X;
-            posObj.Y = newPos.Y;
-            Game.rooms[client.id].Positions[newPos.X][newPos.Y] = posObj;
+            posObj.X = obj.X + dx;
+            posObj.Y = obj.Y + dy;
+            Game.rooms[client.id].Positions[posObj.X][posObj.Y] = posObj;
             Game.rooms[client.id].Positions[obj.X][obj.Y] = null;
 
-            obj.X = newPos.X;
-            obj.Y = newPos.Y;
+            obj.X += dx;
+            obj.Y += dy;
         }
         else {
-            console.log("Место для движения занято");
+            console.log("Место для движения " + data.course + " занято");
+            console.log(Game.rooms[client.id].Positions[obj.X + dx][obj.Y + dy]);
+            console.log(obj);
         }
             
 
