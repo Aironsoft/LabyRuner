@@ -254,6 +254,7 @@ io.sockets.on('connection', function (client) {
         
         var clnt = Client();
         clnt.name = client_name;
+        clnt.color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);//создаётся случайный цвет для игрока
         clnt.room = Game.incompleateRoom.name;
         clnt.client = client;
         

@@ -5,9 +5,9 @@
     var message_txt = null;
     var room = null;    
     var Maze = null;
-    var Positions = [];//положения объектов в лабиринте
+    var Positions = null;//положения объектов в лабиринте
     var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
-    var player = null;
+    var me = null;
     var enemy = null;
     var idPrefix = "id"
     var downButton = 0;
@@ -163,9 +163,9 @@
     
     //координаты игрока
     socket.on('self_spawn', function (data) {
-        player = data;
+        me = data;
         msg_system('spawn self');
-        onMoveUpdate(null, data, "player");
+        onMoveUpdate(null, data, "me");
     });
     
     //координаты врага
@@ -179,13 +179,13 @@
    
     //координаты игроков
     socket.on('self_move', function (data) {
-        onMoveUpdate(player, data,"player");
-        player = data;
+        onMoveUpdate(me, data, "me");
+        me = data;
     });
     
     //координаты игроков
     socket.on('enemy_move', function (data) {
-        onMoveUpdate(enemy, data,"enemy");
+        onMoveUpdate(enemy, data, "enemy");
         enemy = data
     });
 
@@ -233,26 +233,26 @@
         var dx=0, dy=0;
         switch ( downButton ) { 
             case 37:
-                if (verify( 0, -1, player))
+                if (verify( 0, -1, me))
                     dx = -1;
                 break;
             case 38:
-                if (verify( -1,0, player))
+                if (verify( -1,0, me))
                     dy = -1;
                 break;
             case 39:
-                if (verify(0, 1, player))
+                if (verify(0, 1, me))
                     dx = 1;
                 break;
             case 40:
-                if (verify(1, 0, player))
+                if (verify(1, 0, me))
                     dy = 1;
                 break;
             default: break;
 
         }
         if (dx != 0 || dy!=0) {
-            sendMove(player["x"] + dy, player["y"] + dx);
+            sendMove(me["x"] + dy, me["y"] + dx);
             setTimeout(buttonDownIteration, 200);
         }
 
@@ -278,8 +278,6 @@
 
     function onMoveUpdate(oldPosition, newPosition, playerType) {
         
-
-
         var cell = null;
         var newClassNames = "";
         var classNames;
@@ -296,7 +294,7 @@
         classNames = (cell = $('#' + idPrefix + newPosition['x'] + 'x' + newPosition['y']))
         .attr("class") 
         .split(' ');
-        classNames = classNames.filter(function (elem) { return (elem && (elem !== "enemy" || elem !== "player" || elem !=="cursor")); });
+        classNames = classNames.filter(function (elem) { return (elem && (elem !== "enemy" || elem !== "me" || elem !=="cursor")); });
         classNames.push("cursor");
         
         cell.attr('class', classNames.join(" "));
