@@ -17,8 +17,6 @@ var Maze = null;
 
 
 
-
-
 var Point = function () // (rows, columns)
 {
     this.X = -1;
@@ -196,6 +194,21 @@ var GenerateMaze = function (rows, columns) {
 }
 
 
+/**
+ Генерация массива позиций в лабиринте
+ **/
+var coordsArray = function (rows, columns) {
+    var arr = new Array();
+    for (var i = 0; i < columns; i++) { //сначала задаются столбцы
+        arr[i] = new Array();
+        for (var j = 0; j < rows; j++) {
+            var cell = [];
+            arr[i][j] = cell;
+        }
+    }
+    return arr;
+}
+
 
 
 
@@ -215,7 +228,6 @@ Game.users = [];
 
 /////
 
-var rows=7, cols =7;
 
 io.sockets.on('connection', function (client) {
     
@@ -247,19 +259,15 @@ io.sockets.on('connection', function (client) {
             console.log("has no place");
             io.sockets.in(Game.incompleateRoom.name).emit('compleate_room', '');//послать всем участникам комнаты сообщение, что их комната заполнена
             
-            //Maze = GenerateMaze(7, 7);//генерация лабиринта
-            //Game.incompleateRoom.Maze = Maze;
-            //console.log("Лабиринт создан");
-            
-
             
             if (Game.rooms[client.id].Maze == null || Game.rooms[client.id].Maze == undefined) {
                 Game.rooms[client.id].Maze = GenerateMaze(40, 40);//генерация лабиринта
+                Game.rooms[client.id].Coordinates = coordsArray(40, 40);//массив позиций в лабиринте
                 console.log("Лабиринт создан");
             }
             io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[client.id].Maze);
-            console.log("Лабиринт " + Game.rooms[client.id].Maze + "передан");
-            
+            console.log("Лабиринт передан");
+
             var x = Math.round(Math.random() * (cols - 1));
             var y = Math.round(Math.random() * (rows - 1));
             
