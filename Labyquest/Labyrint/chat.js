@@ -3,7 +3,7 @@
     var name = 'Игрок_' + (Math.round(Math.random() * 10000));
     var messages = $("#messages");
     var body = $("body");
-    var mazefield = $("mazefield");
+    var mazefield = $("#mazefield");
     var meField = $("#me-field")
     var maze = null;
     var message_txt = null;
@@ -88,12 +88,14 @@
     function quickMoveMe()
     {
         $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize, 'top': Me.posY - Me.Y * cellSideSize }, 50, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
-        //$("#mazefield").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
     }
     
     function stepMoveMe() {
         $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize, 'top': Me.posY - Me.Y * cellSideSize }, 500, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
-        //$("#mazefield").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
+    }
+    
+    function stepMoveObject(name, X, Y) {
+        $("#"+ name).animate({ 'left': X * cellSideSize, 'top': Y * cellSideSize }, 500, function () { });//сдвиг объекта относительно лабиринта
     }
 
     
@@ -111,6 +113,17 @@
         
         quickMoveMe();
     }
+    
+    function createObject(object) {
+        var l = '<div class="object" id="'+ object.name+'">';
+        l += '<div class="ball" background-color="' + object.color + '"></div>'
+        l += '</div>'
+        mazefield
+            .append(l);
+        var o = $("#"+ object.name);
+        o[0].offsetLeft= object.X * cellSideSize;
+        o[0].offsetTop = object.Y * cellSideSize;
+    }
 
     
     function buildObjects(data) {
@@ -120,9 +133,11 @@
                 createMe();
             }
             else {
-                //CreateNotMe(data.key);
+                createObject(data[key]);
             }
         }
+        Positions[Me.X][Me.Y] = null;//удалить себя из массива позиций
+        ObjectDict.Remove(Me.name);//удалить себя из словаря объектов
     }
 
 
@@ -214,13 +229,20 @@
     
     //От сервера пришло движение объекта
     socket.on('moving', function (data) {
-        if (data.name = Me.name) { //если пришло собственное движение
+        if (data.name == Me.name) { //если пришло собственное движение
             msg_system('Пришло своё движение x='+ data.x+' y='+ data.y);
             Me.X = data.x;
             Me.Y = data.y;
             stepMoveMe();
         }
-        
+        else {
+            var obj = ObjectDict[data.name];
+            Positions[data.x][data.y] = Positions[obj.x][obj.y];
+            Positions[obj.x][obj.y] = null;
+            obj.x = data.x;
+            obj.y = data.y;
+            stepMoveObject(data.name, data.x, data.y)
+        }
     });
 
     

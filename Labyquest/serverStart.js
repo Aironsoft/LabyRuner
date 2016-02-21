@@ -329,7 +329,7 @@ io.sockets.on('connection', function (client) {
                 dy -= 1;
                 break;
             case "e":
-                dx += 1
+                dx += 1;
                 break;
             case "s":
                 dy += 1;
