@@ -3,6 +3,7 @@
     var name = 'Игрок_' + (Math.round(Math.random() * 10000));
     var messages = $("#messages");
     var body = $("body");
+    var mazefield = $("mazefield");
     var meField = $("#me-field")
     var maze = null;
     var message_txt = null;
@@ -84,6 +85,18 @@
     }
     
     
+    function quickMoveMe()
+    {
+        $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize, 'top': Me.posY - Me.Y * cellSideSize }, 50, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
+        $("#mazefield").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
+    }
+    
+    function stepMoveMe() {
+        $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize, 'top': Me.posY - Me.Y * cellSideSize }, 500, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
+        $("#mazefield").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
+    }
+
+    
     function createMe() {
         var l = '<div class="me" id="me" margin-left="46vmax">';
         l += '<div class="ball" background-color="'+Me.color+'"></div>'
@@ -96,11 +109,7 @@
 
         cellSideSize = $("#row_0")[0].clientWidth;
         
-        $("#maze").animate({ 'left': Me.posX - Me.X * cellSideSize, 'top': Me.posY - Me.Y * cellSideSize }, 50, function () { });
-        maze[0].offsetLeft = Me.posX - Me.X * cellSideSize;
-        maze[0].offsetTop = Me.posY - Me.Y * cellSideSize;
-        $("#maze").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
-
+        quickMoveMe();
     }
 
     
@@ -182,6 +191,8 @@
     //Получен лабиринт
     socket.on('maze', function (data) {
         Maze = data;
+        Maze.w = Maze.length;//ширина лабиринта
+        Maze.l = Maze[0].length;//длина лабиринта
         msg_system('Лабиринт получен');
         buildMaze(data);
     });
@@ -227,6 +238,18 @@
         onMoveUpdate(enemy, data, "enemy");
         enemy = data
     });
+    
+    
+    //От сервера пришло движение объекта
+    socket.on('moving', function (data) {
+        if (data.name = Me.name) { //если пришло собственное движение
+            msg_system('Пришло своё движение x='+ data.x+' y='+ data.y);
+            Me.X = data.x;
+            Me.Y = data.y;
+            stepMoveMe();
+        }
+        
+    });
 
     
     // Статистика
@@ -269,34 +292,56 @@
         
         if (!downButton)
             return;
-        var dx=0, dy=0;
+        //var dx = 0, dy = 0;
+        var course = null;//направление движения
+
         switch ( downButton ) { 
             case 37:
-                if (verify( 0, -1, me))
-                    dx = -1;
+                course = "w";
+                //if (verify( 0, -1, me))
+                //    dx = -1;
                 break;
             case 38:
-                if (verify( -1,0, me))
-                    dy = -1;
+                course = "n";
+                //if (verify( -1,0, me))
+                //    dy = -1;
                 break;
             case 39:
-                if (verify(0, 1, me))
-                    dx = 1;
+                course = "e";
+                //if (verify(0, 1, me))
+                //    dx = 1;
                 break;
             case 40:
-                if (verify(1, 0, me))
-                    dy = 1;
+                course = "s";
+                //if (verify(1, 0, me))
+                //    dy = 1;
                 break;
             default: break;
 
         }
-        if (dx != 0 || dy!=0) {
-            sendMove(me["x"] + dy, me["y"] + dx);
+        if (verifyStep(course)) {
+            msg_system('Отправлено своё движение');
+            socket.emit("moving", { name: Me.name, course: course });
+            //sendMove(me["x"] + dy, me["y"] + dx);
             setTimeout(buttonDownIteration, 200);
         }
 
     }
     
+    function verifyStep(course) {
+        switch (course) { 
+            case "w":
+                return Maze[Me.X][Me.Y].west;
+            case "n":
+                return Maze[Me.X][Me.Y].north;
+            case "e":
+                return Maze[Me.X][Me.Y].east;
+            case "s":
+                return Maze[Me.X][Me.Y].south;
+        }
+        return false;
+    }
+
     function verify(dx, dy, data) {
         var y = data["x"] + dy;
         var x = data["y"] + dx;

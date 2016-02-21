@@ -339,12 +339,49 @@ io.sockets.on('connection', function (client) {
     });
     
     client.on('moving', function (data) {
-        var room = Game.rooms[client.id];
-
-        client.coords = data;
         
-        client.emit('self_move', data);
-        client.broadcast.in(Game.rooms[client.id].name).emit('enemy_move', data);
+        var obj = Game.rooms[client.id].ObjectDict[data.name];
+        var newPos = new Point(obj.X, obj.Y);
+        
+        console.log("newPos = " + newPos);
+
+        switch (data.course) { 
+            case "w":
+                newPos.X -= 1;
+            case "n":
+                newPos.Y -= 1;
+            case "e":
+                newPos.X += 1;
+            case "s":
+                newPos.Y += 1;
+        }
+
+        if (Game.rooms[client.id].Positions[newPos.X][newPos.Y] == null)//если ячейка лабиринта, в которую запрашивается перемещение, пуста
+        {
+            console.log("Место для движения "+ data.course+" свободно");
+            
+            io.sockets.in(Game.rooms[client.id].name).emit('moving', { name: data.name, x: newPos.X, y: newPos.Y })
+
+            var posObj = Game.rooms[client.id].Positions[obj.X][obj.Y];
+            posObj.X = newPos.X;
+            posObj.Y = newPos.Y;
+            Game.rooms[client.id].Positions[newPos.X][newPos.Y] = posObj;
+            Game.rooms[client.id].Positions[obj.X][obj.Y] = null;
+
+            obj.X = newPos.X;
+            obj.Y = newPos.Y;
+        }
+        else {
+            console.log("Место для движения занято");
+        }
+            
+
+        //var room = Game.rooms[client.id];
+
+        //client.coords = data;
+        
+        //client.emit('self_move', data);
+        //client.broadcast.in(Game.rooms[client.id].name).emit('enemy_move', data);
 
     });
 
