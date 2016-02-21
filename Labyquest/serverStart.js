@@ -308,29 +308,6 @@ io.sockets.on('connection', function (client) {
             
             io.sockets.in(Game.incompleateRoom.name).emit('objects', Game.incompleateRoom.ObjectDict);
             console.log("Объекты " + Game.incompleateRoom.ObjectDict + " переданы");
-            
-
-            var x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
-            var y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
-            
-            var players =[ { 'x': x, 'y': y }];
-
-            var x2 = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
-            var y2 = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
-
-            while (x2 === x && y2 === y) {
-                x2 = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
-                y2 = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
-            }
-            
-            players.push({ 'x': x2, 'y': y2 });
-            var i = 0;
-            Game.incompleateRoom.clients.forEach(function (c,i,a) {
-                c.emit('self_spawn', players[i]);
-                c.broadcast.in(Game.incompleateRoom.name).emit('enemy_spawn', players[i]);
-                c.coords = players[i];
-                
-            });
 
 
             Game.incompleateRoom = null;//и отметить, что неполной комнаты нет

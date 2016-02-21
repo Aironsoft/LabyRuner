@@ -211,34 +211,6 @@
         buildObjects(data);
     });
     
-    //координаты игрока
-    socket.on('self_spawn', function (data) {
-        me = data;
-        msg_system('spawn self');
-        onMoveUpdate(null, data, "me");
-    });
-    
-    //координаты врага
-    socket.on('enemy_spawn', function (data) {
-        enemy = data;
-        msg_system('spawn self');
-        onMoveUpdate(null, data, "enemy");
-    });
-    
-    
-   
-    //координаты игроков
-    socket.on('self_move', function (data) {
-        onMoveUpdate(me, data, "me");
-        me = data;
-    });
-    
-    //координаты игроков
-    socket.on('enemy_move', function (data) {
-        onMoveUpdate(enemy, data, "enemy");
-        enemy = data
-    });
-    
     
     //От сервера пришло движение объекта
     socket.on('moving', function (data) {
@@ -256,9 +228,6 @@
     socket.on('stats', function (arr) {
         var stats = $('#stats');
         stats.find('div').not('.turn').remove();
-        //for (val in arr) {
-        //    stats.prepend($('<div/>').attr('class', 'ui-state-hover ui-corner-all').html(arr[val]));
-        //}
     
         var m = '<div class="msg">' +
                     '<span class="user">' + arr[0] + '.</span> ' 
@@ -286,8 +255,6 @@
     
    
     
-    
-    
     function buttonDownIteration() {
         
         if (!downButton)
@@ -298,23 +265,15 @@
         switch ( downButton ) { 
             case 37:
                 course = "w";
-                //if (verify( 0, -1, me))
-                //    dx = -1;
                 break;
             case 38:
                 course = "n";
-                //if (verify( -1,0, me))
-                //    dy = -1;
                 break;
             case 39:
                 course = "e";
-                //if (verify(0, 1, me))
-                //    dx = 1;
                 break;
             case 40:
                 course = "s";
-                //if (verify(1, 0, me))
-                //    dy = 1;
                 break;
             default: break;
 
@@ -322,7 +281,6 @@
         if (verifyStep(course)) {
             msg_system('Отправлено своё движение');
             socket.emit("moving", { name: Me.name, course: course });
-            //sendMove(me["x"] + dy, me["y"] + dx);
             setTimeout(buttonDownIteration, 200);
         }
 
@@ -342,47 +300,9 @@
         return false;
     }
 
-    function verify(dx, dy, data) {
-        var y = data["x"] + dy;
-        var x = data["y"] + dx;
-        var res = 0 <= x && x < width && 0 <= y && y < height
-        cell = Maze[data["y"]][data["x"]];
-        return res && (dx < 0 && cell.north || dx > 0 && cell.south || dy < 0 && cell.west|| dy > 0 && cell.east);
-    }
-    
-    function sendMove(x, y){
-        socket.emit("moving", { 'x': x, 'y': y });
-    }
-
-    
     
     function safe(str) {
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    function onMoveUpdate(oldPosition, newPosition, playerType) {
-        
-        var cell = null;
-        var newClassNames = "";
-        var classNames;
-         
-        if (oldPosition!=null) {
-            classNames = (cell = $('#' + idPrefix + oldPosition['x'] + 'x' + oldPosition['y']))
-            .attr("class")
-            .split(' ');
-        
-            classNames = classNames.filter(function (elem) {return (elem && elem !== "cursor"); });
-            classNames.push(playerType)
-            cell.attr('class', classNames.join(" "));
-        }
-        classNames = (cell = $('#' + idPrefix + newPosition['x'] + 'x' + newPosition['y']))
-        .attr("class") 
-        .split(' ');
-        classNames = classNames.filter(function (elem) { return (elem && (elem !== "enemy" || elem !== "me" || elem !=="cursor")); });
-        classNames.push("cursor");
-        
-        cell.attr('class', classNames.join(" "));
-
     }
 
 });
