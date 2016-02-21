@@ -4,7 +4,9 @@
     var messages = $("#messages");
     var body = $("body");
     var meField = $("#me-field")
+    var maze = null;
     var message_txt = null;
+    var cellSideSize = 1;//размер стороны ячейки
     var room = null;    
     var Maze = null;
     var Positions = null;//положения объектов в лабиринте
@@ -74,7 +76,7 @@
             l += row;
         }
 
-        var maze = $("#maze");
+        maze = $("#maze");
         maze
                         .addClass("large")// добавим этой копии класс newElement
                         .append(l)
@@ -88,6 +90,17 @@
         l += '</div>'
         meField
             .append(l);
+        var m = $("#me");
+        Me.posX = m[0].offsetLeft;
+        Me.posY = m[0].offsetTop;
+
+        cellSideSize = $("#row_0")[0].clientWidth;
+        
+        $("#maze").animate({ 'left': Me.posX - Me.X * cellSideSize, 'top': Me.posY - Me.Y * cellSideSize }, 50, function () { });
+        maze[0].offsetLeft = Me.posX - Me.X * cellSideSize;
+        maze[0].offsetTop = Me.posY - Me.Y * cellSideSize;
+        $("#maze").offset({ left: Me.posX - Me.X * cellSideSize, top: Me.posY - Me.Y * cellSideSize });
+
     }
 
     

@@ -7,44 +7,47 @@
     <title>LabyQuest</title>
 </head>
 <body>
-    <div class="right-panel">
-        <div class="demo">
-            <a class="permalink" href="http://www.itlessons.info/nodejs/simple-chat-with-nodejs-and-socket-io/">← cсылка на статью</a>
-
-            <h1>LabyQuest</h1>
-
-            <button id="reload">Новая игра</button>
-            <div id="stats" class="ui-widget" valign="top"></div>
-            <hr />
-
-            <table>
-                <tr>
-                    <td id="board" class="ui-widget" valign="top">
-                        <div id="masked" class="ui-widget-shadow ui-corner-all ui-widget-overlay"></div>
-                        <div id="timerpanel">
-                            Время до конца хода:
-                            <span id="timer">15</span> сек.
-                        </div>
-                        <table class="ui-widget ui-corner-all" cellpadding="0" cellspacing="0" align="left" id="board-table"></table>
-                    </td>
-                </tr>
-            </table>
-
-            <div class="chat">
-                <div class="messages" id="messages"></div>
-
-                <div class="panel">
-                    <span class="nick"></span>
-                    <input type="text" name="message_text" id="message_text">
-                    <button type="button" id="message_btn">Отправить</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
     
 
     <!--<div class="row">-->
     <div class="me-field" id="me-field">
+
+        <div class="right-panel">
+            <div class="demo">
+                <a class="permalink" href="http://www.itlessons.info/nodejs/simple-chat-with-nodejs-and-socket-io/">← cсылка на статью</a>
+
+                <h1>LabyQuest</h1>
+
+                <button id="reload">Новая игра</button>
+                <div id="stats" class="ui-widget" valign="top"></div>
+                <hr />
+
+                <table>
+                    <tr>
+                        <td id="board" class="ui-widget" valign="top">
+                            <div id="masked" class="ui-widget-shadow ui-corner-all ui-widget-overlay"></div>
+                            <div id="timerpanel">
+                                Время до конца хода:
+                                <span id="timer">15</span> сек.
+                            </div>
+                            <table class="ui-widget ui-corner-all" cellpadding="0" cellspacing="0" align="left" id="board-table"></table>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="chat">
+                    <div class="messages" id="messages"></div>
+
+                    <div class="panel">
+                        <span class="nick"></span>
+                        <input type="text" name="message_text" id="message_text">
+                        <button type="button" id="message_btn">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="maze" id="maze"></div>
     </div>
     <!--</div>-->
