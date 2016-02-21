@@ -214,6 +214,11 @@ var Client = function (){
     return client;
 }
 
+var ClientCopy = function (client) {
+    var copy = { name: client.name, room: client.room, color: client.color, X: client.X, Y: client.Y }
+    return copy;
+}
+
 
 
 server.listen(PORT);
@@ -279,6 +284,8 @@ io.sockets.on('connection', function (client) {
             io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[client.id].Maze);
             console.log("Лабиринт передан");
             
+            //Game.incompleateRoom.ObjectDict = {};
+
             for (var i = 0; i < Game.incompleateRoom.clients.length; i++) { //каждый клиент данной комнаты
                 var x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
                 var y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
@@ -290,12 +297,17 @@ io.sockets.on('connection', function (client) {
 
                 Game.incompleateRoom.clients[i].me.X = x;
                 Game.incompleateRoom.clients[i].me.Y = y;
-
-                Game.incompleateRoom.Positions[x][y] = Game.incompleateRoom.clients[i].me;//помещается в случайное место лабиринта
-                Game.incompleateRoom.Positions.
+                
+                Game.incompleateRoom.Positions[x][y] = ClientCopy(Game.incompleateRoom.clients[i].me);//помещается в случайное место лабиринта
+                Game.incompleateRoom.ObjectDict[Game.incompleateRoom.clients[i].me.name] = ClientCopy(Game.incompleateRoom.clients[i].me);;//записывает игрока в словарь объектов
             }
+
             io.sockets.in(Game.incompleateRoom.name).emit('positions', Game.incompleateRoom.Positions);
             console.log("Позиции " + Game.incompleateRoom.Positions + " переданы");
+            
+            io.sockets.in(Game.incompleateRoom.name).emit('objects', Game.incompleateRoom.ObjectDict);
+            console.log("Объекты " + Game.incompleateRoom.ObjectDict + " переданы");
+            
 
             var x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
             var y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));

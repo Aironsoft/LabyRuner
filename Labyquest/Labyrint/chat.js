@@ -5,7 +5,8 @@
     var message_txt = null;
     var room = null;    
     var Maze = null;
-    var Positions = null;//положения объектов в лабиринте
+    var Positions = [];//положения объектов в лабиринте
+    var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
     var player = null;
     var enemy = null;
     var idPrefix = "id"
@@ -150,6 +151,13 @@
     socket.on('positions', function (data) {
         Positions = data;
         msg_system('Позиции получены');
+        //buildObjects(data);
+    });
+    
+    //Объекты позиции
+    socket.on('objects', function (data) {
+        ObjectDict = data;
+        msg_system('Объекты получены');
         //buildObjects(data);
     });
     
