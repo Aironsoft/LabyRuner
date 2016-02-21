@@ -7,12 +7,13 @@
     var Maze = null;
     var Positions = null;//положения объектов в лабиринте
     var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
+    var Me = null;
     var me = null;
     var enemy = null;
     var idPrefix = "id"
     var downButton = 0;
-    var width = 7;
-    var height = 7;
+    var width = 0;
+    var height = 0;
 
     
     $('.chat .nick').text(name);
@@ -78,6 +79,20 @@
                         .scrollTop(messages[0].scrollHeight);
     }
     
+    
+    function buildObjects(data) {
+        for ( var key in data) {
+            if (key = name) {
+                Me = null;
+                //CreateMe();
+            }
+            else {
+                //CreateNotMe(data.key);
+            }
+        }
+    }
+
+
 
     
     socket.on('stats', function (arr) {
@@ -158,7 +173,7 @@
     socket.on('objects', function (data) {
         ObjectDict = data;
         msg_system('Объекты получены');
-        //buildObjects(data);
+        buildObjects(data);
     });
     
     //координаты игрока
