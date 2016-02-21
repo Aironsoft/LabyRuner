@@ -2,6 +2,8 @@
     var socket = io.connect('http://localhost:8008');
     var name = 'Игрок_' + (Math.round(Math.random() * 10000));
     var messages = $("#messages");
+    var body = $("body");
+    var meField = $("#me-field")
     var message_txt = null;
     var room = null;    
     var Maze = null;
@@ -43,7 +45,7 @@
 
         var m = '<div class="msg system">'+data.length + '</div>';
         
-        var l = '<div class="grid"></div>';
+        var l = '<div class="grid" id="grid"></div>';
 
         for (var i = 0; i < data.length; i++) { //сначала задаются строки
             
@@ -80,11 +82,20 @@
     }
     
     
+    function createMe() {
+        var l = '<div class="me" id="me" margin-left="46vmax">';
+        l += '<div class="ball" background-color="'+Me.color+'"></div>'
+        l += '</div>'
+        meField
+            .append(l);
+    }
+
+    
     function buildObjects(data) {
         for ( var key in data) {
-            if (key = name) {
-                Me = null;
-                //CreateMe();
+            if (key == name) {
+                Me = data[key];
+                createMe();
             }
             else {
                 //CreateNotMe(data.key);
