@@ -209,6 +209,11 @@ var coordsArray = function (rows, columns) {
 }
 
 
+var Client = function (){
+    var client = {name: null, room: null, client: null, color: null, X: -1, Y: -1 }
+    return client;
+}
+
 
 
 server.listen(PORT);
@@ -236,11 +241,18 @@ io.sockets.on('connection', function (client) {
         Game.users.push(client);//добавляем нового игрока
     
     
-    client.on('req_room', function () {
+    client.on('req_room', function (client_name) {
         
         //Game.start();
         if (Game.incompleateRoom == null)  //* if (Game.incompleateRoom ==- null)
             Game.incompleateRoom = new Room("комната" + (Math.round(Math.random() * 10000)));
+        
+        var clnt = Client();
+        clnt.name = client_name;
+        clnt.room = Game.incompleateRoom.name;
+        clnt.client = client;
+        
+        client.me = clnt;
 
         Game.incompleateRoom.addClient(client);
         client.join(Game.incompleateRoom.name);
@@ -267,29 +279,35 @@ io.sockets.on('connection', function (client) {
             io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[client.id].Maze);
             console.log("Лабиринт передан");
             
-            for (var i = 0; i < Game.rooms[client.id].clients.length; i++) { //каждый клиент данной комнаты
-                var x = Math.round(Math.random() * (Game.rooms[client.id].Maze.length - 1));
-                var y = Math.round(Math.random() * (Game.rooms[client.id].Maze[0].length - 1));
+            for (var i = 0; i < Game.incompleateRoom.clients.length; i++) { //каждый клиент данной комнаты
+                var x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
+                var y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
 
-                while (Game.rooms[client.id].Positions[x][y] != null) {
-                    x = Math.round(Math.random() * (Game.rooms[client.id].Maze.length - 1));
-                    y = Math.round(Math.random() * (Game.rooms[client.id].Maze[0].length - 1));
+                while (Game.incompleateRoom.Positions[x][y] != null) {
+                    x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
+                    y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
                 }
 
-                Game.rooms[client.id].Positions[x][y] = Game.rooms[client.id].clients[i];//помещается в случайное место лабиринта
-            }
+                Game.incompleateRoom.clients[i].me.X = x;
+                Game.incompleateRoom.clients[i].me.Y = y;
 
-            var x = Math.round(Math.random() * (cols - 1));
-            var y = Math.round(Math.random() * (rows - 1));
+                Game.incompleateRoom.Positions[x][y] = Game.incompleateRoom.clients[i].me;//помещается в случайное место лабиринта
+                Game.incompleateRoom.Positions.
+            }
+            io.sockets.in(Game.incompleateRoom.name).emit('positions', Game.incompleateRoom.Positions);
+            console.log("Позиции " + Game.incompleateRoom.Positions + " переданы");
+
+            var x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
+            var y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
             
             var players =[ { 'x': x, 'y': y }];
 
-            var x2 = Math.round(Math.random() * (cols - 1));
-            var y2 = Math.round(Math.random() * (rows - 1));
+            var x2 = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
+            var y2 = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
 
             while (x2 === x && y2 === y) {
-                x2 = Math.round(Math.random() * (cols - 1));
-                y2 = Math.round(Math.random() * (rows - 1));
+                x2 = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
+                y2 = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
             }
             
             players.push({ 'x': x2, 'y': y2 });

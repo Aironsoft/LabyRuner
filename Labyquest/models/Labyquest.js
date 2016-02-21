@@ -63,7 +63,7 @@ Labyquest.prototype.start = function () {
 
 
 /**
- * Сделан ход
+ * Добавляет клиента в комнату
  */
 Room.prototype.addClient = function (client) {
     if (this.clients.length < 2)

@@ -5,6 +5,7 @@
     var message_txt = null;
     var room = null;    
     var Maze = null;
+    var Positions = null;//положения объектов в лабиринте
     var player = null;
     var enemy = null;
     var idPrefix = "id"
@@ -97,13 +98,13 @@
 
     
     socket.on('connecting', function () {
-        socket.emit('req_room', '');
+        socket.emit('req_room', name);
         msg_system('Соединение...');
     });
     
-    socket.on('connect', function () {
+    //socket.on('connect', function () {
                
-    });
+    //});
     
     
     
@@ -143,6 +144,13 @@
         Maze = data;
         msg_system('Лабиринт получен');
         buildMaze(data);
+    });
+    
+    //Получены позиции
+    socket.on('positions', function (data) {
+        Positions = data;
+        msg_system('Позиции получены');
+        //buildObjects(data);
     });
     
     //координаты игрока
