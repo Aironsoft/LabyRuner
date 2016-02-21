@@ -202,8 +202,7 @@ var coordsArray = function (rows, columns) {
     for (var i = 0; i < columns; i++) { //сначала задаются столбцы
         arr[i] = new Array();
         for (var j = 0; j < rows; j++) {
-            var cell = [];
-            arr[i][j] = cell;
+            arr[i][j] = null;
         }
     }
     return arr;
@@ -262,11 +261,23 @@ io.sockets.on('connection', function (client) {
             
             if (Game.rooms[client.id].Maze == null || Game.rooms[client.id].Maze == undefined) {
                 Game.rooms[client.id].Maze = GenerateMaze(40, 40);//генерация лабиринта
-                Game.rooms[client.id].Coordinates = coordsArray(40, 40);//массив позиций в лабиринте
+                Game.rooms[client.id].Positions = coordsArray(40, 40);//массив позиций в лабиринте
                 console.log("Лабиринт создан");
             }
             io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[client.id].Maze);
             console.log("Лабиринт передан");
+            
+            for (var i = 0; i < Game.rooms[client.id].clients.length; i++) { //каждый клиент данной комнаты
+                var x = Math.round(Math.random() * (Game.rooms[client.id].Maze.length - 1));
+                var y = Math.round(Math.random() * (Game.rooms[client.id].Maze[0].length - 1));
+
+                while (Game.rooms[client.id].Positions[x][y] != null) {
+                    x = Math.round(Math.random() * (Game.rooms[client.id].Maze.length - 1));
+                    y = Math.round(Math.random() * (Game.rooms[client.id].Maze[0].length - 1));
+                }
+
+                Game.rooms[client.id].Positions[x][y] = Game.rooms[client.id].clients[i];//помещается в случайное место лабиринта
+            }
 
             var x = Math.round(Math.random() * (cols - 1));
             var y = Math.round(Math.random() * (rows - 1));

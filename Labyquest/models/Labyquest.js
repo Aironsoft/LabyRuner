@@ -34,7 +34,7 @@ var Room = module.exports = function (name) {
     EventEmitter.call(this);// Инициализируем события
     
     this.Maze = null;
-    this.Coordinates = [];//позиции игроков и предметов в лабиринте
+    this.Positions = [];//позиции игроков и предметов в лабиринте
 
     this.name = name;
     var clients = this.clients = [] ///var clients = this.clients = []
