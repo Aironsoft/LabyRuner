@@ -177,4 +177,6 @@ body {
         background: #e3e3e3;
         border: 2px solid #939393;
         border-radius: 4vmin;
+        line-height: 8vmin;
+        text-align: center;
 }

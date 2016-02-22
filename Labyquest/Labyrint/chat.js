@@ -107,7 +107,7 @@
     
     function createMe() {
         var l = '<div class="me" id="me" margin-left="46vmax">';
-        l += '<div class="ball" background-color="'+Me.color+'"></div>'
+        l += '<div class="ball" background-color="'+Me.color+'">' + Me.name + '</div>'
         l += '</div>'
         meField
             .append(l);
@@ -120,7 +120,7 @@
     
     function createObject(object) {
         var l = '<div class="object" id="'+ object.name+'">';
-        l += '<div class="ball" background-color="' + object.color + '"></div>'
+        l += '<div class="ball" background-color="' + object.color + '">'+ object.name +'</div>'
         l += '</div>'
         mazefield
             .append(l);
