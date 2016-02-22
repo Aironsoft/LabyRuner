@@ -81,7 +81,6 @@
                         .append(l)
                         .scrollTop(messages[0].scrollHeight);
         
-        //cellSideSize = $("#row_0")[0].clientWidth;
         cellSideSize = $("#maze")[0].scrollHeight / rows;
     }
     
@@ -149,7 +148,6 @@
         Me.posX = m[0].offsetLeft;
         Me.posY = m[0].offsetTop;
         
-        //cellSideSize = $("#row_0")[0].clientWidth;
         cellSideSize = $("#maze")[0].scrollHeight / rows;
         
         quickMoveMe();
@@ -287,7 +285,7 @@
     });
     
     $(document).keydown(function (e) {
-        if (e.keyCode <= 40 && e.keyCode >= 37) {
+        if ((e.keyCode <= 40 && e.keyCode >= 37) || e.keyCode == 65 || e.keyCode == 87 || e.keyCode == 68 || e.keyCode == 83) {
             downButton = e.keyCode;
         }
         buttonDownIteration();
@@ -299,20 +297,20 @@
         
         if (!downButton)
             return;
-        //var dx = 0, dy = 0;
+        
         var course = null;//направление движения
 
         switch ( downButton ) { 
-            case 37:
+            case 37, 65:
                 course = "w";
                 break;
-            case 38:
+            case 38, 87:
                 course = "n";
                 break;
-            case 39:
+            case 39, 68:
                 course = "e";
                 break;
-            case 40:
+            case 40, 83:
                 course = "s";
                 break;
             default: break;

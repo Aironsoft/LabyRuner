@@ -179,4 +179,7 @@ body {
         border-radius: 4vmin;
         line-height: 8vmin;
         text-align: center;
+        /*-moz-border-radius:4vmin;
+        -webkit-border-radius:4vmin;
+        -khtml-border-radius:4vmin;*/
 }
