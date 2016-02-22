@@ -317,6 +317,9 @@ io.sockets.on('connection', function (client) {
     
     client.on('moving', function (data) {
         
+        if (Game.rooms[client.id] == undefined)
+            return;
+
         var dx = 0, dy = 0;
         
         var obj = Game.rooms[client.id].ObjectDict[data.name];
