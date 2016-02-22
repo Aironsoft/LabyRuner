@@ -12,13 +12,9 @@
     var Maze = null;
     var Positions = null;//положения объектов в лабиринте
     var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
-    var Me = null;
-    var me = null;
-    var enemy = null;
+    var Me = null; //объект игрока
     var idPrefix = "id"
     var downButton = 0;
-    var width = 0;
-    var height = 0;
 
     
     $('.chat .nick').text(name);
@@ -82,6 +78,8 @@
                         .addClass("large")// добавим этой копии класс newElement
                         .append(l)
                         .scrollTop(messages[0].scrollHeight);
+        
+        cellSideSize = $("#row_0")[0].clientWidth;
     }
     
     
@@ -94,6 +92,11 @@
         $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize, 'top': Me.posY - Me.Y * cellSideSize }, 500, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
     }
     
+    
+    function quickMoveObject(name, X, Y) {
+        $("#" + name).animate({ 'left': X * cellSideSize, 'top': Y * cellSideSize }, 50, function () { });//сдвиг объекта относительно лабиринта
+    }
+
     function stepMoveObject(name, X, Y) {
         $("#"+ name).animate({ 'left': X * cellSideSize, 'top': Y * cellSideSize }, 500, function () { });//сдвиг объекта относительно лабиринта
     }
@@ -108,8 +111,6 @@
         var m = $("#me");
         Me.posX = m[0].offsetLeft;
         Me.posY = m[0].offsetTop;
-
-        cellSideSize = $("#row_0")[0].clientWidth;
         
         quickMoveMe();
     }
@@ -120,9 +121,8 @@
         l += '</div>'
         mazefield
             .append(l);
-        var o = $("#"+ object.name);
-        o[0].offsetLeft= object.X * cellSideSize;
-        o[0].offsetTop = object.Y * cellSideSize;
+        
+        quickMoveObject(object.name, object.X, object.Y);
     }
 
     
@@ -139,6 +139,17 @@
         Positions[Me.X][Me.Y] = null;//удалить себя из массива позиций
         ObjectDict.Remove(Me.name);//удалить себя из словаря объектов
     }
+
+    window.onresize = function () { //если изменился размер окна
+        msg_system('Окно изменилось!');
+        var m = $("#me");
+        Me.posX = m[0].offsetLeft;
+        Me.posY = m[0].offsetTop;
+        
+        cellSideSize = $("#row_0")[0].clientWidth;
+        
+        quickMoveMe();
+    };
 
 
 
@@ -165,10 +176,6 @@
         socket.emit('req_room', name);
         msg_system('Соединение...');
     });
-    
-    //socket.on('connect', function () {
-               
-    //});
     
     
     
@@ -236,12 +243,13 @@
             stepMoveMe();
         }
         else {
+            msg_system('Пришло движение объекта x=' + data.x + ' y=' + data.y);
+            stepMoveObject(data.name, data.x, data.y);//сдвинуть объект 
             var obj = ObjectDict[data.name];
-            Positions[data.x][data.y] = Positions[obj.x][obj.y];
+            Positions[data.x][data.y] = Positions[obj.x][obj.y]; //TODO - тут вылетает
             Positions[obj.x][obj.y] = null;
             obj.x = data.x;
             obj.y = data.y;
-            stepMoveObject(data.name, data.x, data.y)
         }
     });
 
