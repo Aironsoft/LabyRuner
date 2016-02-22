@@ -1,6 +1,4 @@
 body {
-    /*width: 100%;
-    height: 100%;*/
     overflow: hidden;/*чтоб страница не прокручивалась*/
 }
 
@@ -58,7 +56,7 @@ body {
     font-size: 16px;
     vertical-align: middle;
 }
-#board {}
+
 #board-table td {
     height: 100px;
     width: 100px;
@@ -84,7 +82,7 @@ body {
 
 
 .row .maze {
-  padding: 0 0 20px 20px;
+  /*padding: 0 0 20px 20px;*/
   display: inline-block;
 }
 
@@ -113,8 +111,8 @@ body {
 .cell
 {
     border: 4px solid black;
-    width: 5vmin;
-    height: 5vmin;
+    width: 8vmin;
+    height: 8vmin;
 }
 
 .n
@@ -172,11 +170,11 @@ body {
 }
 
 .ball {
-        margin-top: 4px;
-        margin-left: 4px;
-        width: 5vmin;
-        height: 5vmin;
+        margin-top: 2px;
+        margin-left: 2px;
+        width: 8vmin;
+        height: 8vmin;
         background: #e3e3e3;
         border: 2px solid #939393;
-        border-radius: 2.5vmin;
+        border-radius: 4vmin;
 }

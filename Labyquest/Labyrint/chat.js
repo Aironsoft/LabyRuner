@@ -10,6 +10,8 @@
     var cellSideSize = 1;//размер стороны ячейки
     var room = null;    
     var Maze = null;
+    var rows = 0;
+    var columns = 0;
     var Positions = null;//положения объектов в лабиринте
     var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
     var Me = null; //объект игрока
@@ -39,8 +41,8 @@
     
     function buildMaze(data) {
         
-        height = data.length
-        width = data[0].length
+        columns = data.length
+        rows = data[0].length
 
         var m = '<div class="msg system">'+data.length + '</div>';
         
@@ -79,7 +81,8 @@
                         .append(l)
                         .scrollTop(messages[0].scrollHeight);
         
-        cellSideSize = $("#row_0")[0].clientWidth;
+        //cellSideSize = $("#row_0")[0].clientWidth;
+        cellSideSize = $("#maze")[0].scrollHeight / rows;
     }
     
     
@@ -146,9 +149,16 @@
         Me.posX = m[0].offsetLeft;
         Me.posY = m[0].offsetTop;
         
-        cellSideSize = $("#row_0")[0].clientWidth;
+        //cellSideSize = $("#row_0")[0].clientWidth;
+        cellSideSize = $("#maze")[0].scrollHeight / rows;
         
         quickMoveMe();
+
+        for (var key in ObjectDict) {
+            if (key != name) {
+                quickMoveObject(key, ObjectDict.key.X, ObjectDict.key.Y);
+            }
+        }
     };
 
 
@@ -246,10 +256,10 @@
             msg_system('Пришло движение объекта x=' + data.x + ' y=' + data.y);
             stepMoveObject(data.name, data.x, data.y);//сдвинуть объект 
             var obj = ObjectDict[data.name];
-            Positions[data.x][data.y] = Positions[obj.x][obj.y]; //TODO - тут вылетает
-            Positions[obj.x][obj.y] = null;
-            obj.x = data.x;
-            obj.y = data.y;
+            Positions[data.x][data.y] = Positions[obj.X][obj.Y];
+            Positions[obj.X][obj.Y] = null;
+            obj.X = data.x;
+            obj.Y = data.y;
         }
     });
 
