@@ -1,23 +1,73 @@
-﻿$(document).ready(function () {
-    var socket = io.connect('http://localhost:8008');
-    var name = 'Игрок_' + (Math.round(Math.random() * 10000));
-    var messages = $("#messages");
-    var body = $("body");
-    var mazefield = $("#mazefield");
-    var meField = $("#me-field")
-    var maze = null;
-    var message_txt = null;
-    var cellSideSize = 1;//размер стороны ячейки
-    var room = null;    
-    var Maze = null;
-    var rows = 0;
-    var columns = 0;
-    var Positions = null;//положения объектов в лабиринте
-    var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
-    var Me = null; //объект игрока
-    var idPrefix = "id"
-    var downButton = 0;
+﻿var socket = null;
+var name = null;
+var messages = null;
+var body = null;
+var mazefield = null;
+var meField = null;
+var maze = null;
+var message_txt = null;
+var cellSideSize = 1;//размер стороны ячейки
+var room = null;
+var Maze = null;
+var rows = 0;
+var columns = 0;
+var Positions = null;//положения объектов в лабиринте
+var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
+var Me = {}; //объект игрока
+var idPrefix = "id"
+var downButton = 0;
 
+function sendNickName() {
+    var newName = $('#nick_name').val().trimRight().trimLeft()
+    if (name != null && name != '') {
+        name = newName;
+        socket.emit('nick_name', name);
+        socket.emit('select_room', name);
+        Me.name = name;
+    }
+    else {
+        var m = '<div class="msg system">Имя Игрока не введено</div>';
+        $("#message_txt").append(m)
+              .scrollTop(messages[0].scrollHeight);
+    }
+}
+
+function createNewRoom() {
+    body.children().remove();
+    $('<div>' +
+        'Название комнаты: <input type="text"  id="room_name">' +
+        'Максимальное число игроков: <input type="text" pattern="[0-9]{,2}" id="room_max" value="10">' +
+        '<button type="button" id="create_room_btn" >Создать</button>' +
+        +'</div>').appendTo('body');
+    
+    $('#create_room_btn').click(function () {
+        var data = {}
+        data.name = $('#room_name').val();
+        data.MaxClients = $('#room_max').val();
+        room = data["name"];
+        socket.emit('new_room', data);
+        body.children().remove();
+        $('<div>' +
+            '<button type="button" onclick="socket.emit('+"'start_game',"+" '')"+'" >' +
+            'Начать игру</button>' +
+            +'</div>').appendTo('body');
+           
+    });
+}
+
+
+function sendJoinRoom() {
+    room = $('roomSelection :selected').attr('class');
+    body.children().remove();
+    $('<h1>Ожидание игроков</h1>').appendTo('body');
+    socket.emit('join_room', room);
+}
+
+$(document).ready(function () {
+   
+    socket = io.connect('http://localhost:8008');
+    body = $('body');
+   
     
     $('.chat .nick').text(name);
     
@@ -26,16 +76,14 @@
                         '<span class="user">' + safe(nick) + ':</span> ' 
                         + safe(message) +
                         '</div>';
-        messages
-                        .append(m)
-                        .scrollTop(messages[0].scrollHeight);
+        messages.append(m)
+                .scrollTop(messages[0].scrollHeight);
     }
     
     function msg_system(message) {
         var m = '<div class="msg system">' + safe(message) + '</div>';
-        messages
-                        .append(m)
-                        .scrollTop(messages[0].scrollHeight);
+        messages.append(m)
+                .scrollTop(messages[0].scrollHeight);
     }
     
     
@@ -178,11 +226,18 @@
         stats
                     .append(m)
     });
+    
+    
+    function setBody(bodyContent) {
+        body.children().remove();
+        $(bodyContent).appendTo('body');
+    }
 
+    socket.on('body', setBody );
     
     socket.on('connecting', function () {
-        socket.emit('req_room', name);
-        msg_system('Соединение...');
+        socket.emit('init', '');
+        
     });
     
     
@@ -192,31 +247,40 @@
         message_txt.focus();
     });
     
-    socket.on('room', function (data) {
-        room = data;
-        msg_system('Вы подключены к комнате «'+ room +'»!');
-    });
+   
     
-    socket.on('compleate_room', function (data) {
-        msg_system('Соединение установлено!');
+    socket.on('start_game', function (data) {
+        
+        messages = $("#messages");
+        body = $("body");
+        mazefield = $("#mazefield");
+        meField = $("#me-field");
+       
+       
         
         $('#chatDiv').append(' <div class="panel">' +
                 '<span class="nick"></span> <input type="text" name="message_text" id="message_text">' +
                 '<button type="button" id="message_btn">Отправить</button>' +
                 '</div>').scrollTop(messages[0].scrollHeight);
-        
+
+       
         message_txt = $("#message_text");
+
         
+
         $("#message_btn").click(function () {
             var text = $("#message_text").val();
             if (text.length <= 0)
                 return;
             message_txt.val("");
             socket.emit("message", { message: text, name: name });
+
         });
-                                
+        msg_system('Соединение установлено!');
+        msg_system('Вы подключены к комнате «' + room + '»!');
+        msg_system('Игра началась!');
+
     });
-    
     
     //Получен лабиринт
     socket.on('maze', function (data) {
@@ -285,10 +349,12 @@
     });
     
     $(document).keydown(function (e) {
+
         if ((e.keyCode <= 40 && e.keyCode >= 37) || e.keyCode == 65 || e.keyCode == 87 || e.keyCode == 68 || e.keyCode == 83) {
             downButton = e.keyCode;
+            buttonDownIteration();
         }
-        buttonDownIteration();
+       
     });
     
    

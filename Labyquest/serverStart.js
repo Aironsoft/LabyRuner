@@ -10,8 +10,9 @@ var http = require('http');
 var server = http.createServer(app);
 var io = require('socket.io').listen(server, options);
 
-var Labyquest = require('./models/Labyquest.js');//получение модели лабиринта
-var Room = require('./models/Labyquest.js');//получение модели комнаты
+var laby = require('./models/Labyquest.js');//получение модели лабиринта
+var Room = laby.Room;//получение модели комнаты
+var Labyquest = laby.Labyquest;
 
 var Maze = null;
 
@@ -209,13 +210,20 @@ var coordsArray = function (rows, columns) {
 }
 
 
-var Client = function (){
-    var client = {name: null, room: null, client: null, color: null, X: -1, Y: -1 }
-    return client;
+var Client = function (socket){
+    
+    this.name = null;
+    this.socket = socket;
+    this.room = null;
+    this.color = null;
+    this.X = -1;
+    this.Y = -1;
+
+    
 }
 
 var ClientCopy = function (client) {
-    var copy = { name: client.name, room: client.room, color: client.color, X: client.X, Y: client.Y }
+    var copy = { name: client.name, socket:client.soket, room: client.room, color: client.color, X: client.X, Y: client.Y }
     return copy;
 }
 
@@ -223,7 +231,8 @@ var ClientCopy = function (client) {
 
 server.listen(PORT);
 
-app.use('/static', express.static(__dirname + '/static'));
+app.use(express.static(__dirname + '/Labyrint'));
+//app.use('/labyrint', express.static(__dirname + ''));
 
 app.get('/', function (req, res) {
     res.sendfile(__dirname + '/index.html');
@@ -231,98 +240,132 @@ app.get('/', function (req, res) {
 
 
 var countGames = 0, countPlayers = [], Game = new Labyquest();
-Game.rooms = [];
+Game.rooms = {};
 Game.users = [];
 
 
 /////
 
 
-io.sockets.on('connection', function (client) {
+
+
+io.sockets.on('connection', function (socket) {
     
     if (Game.users === undefined)
         Game.users = [];
-    else if (Game.users.indexOf(client) == -1)//если такого игрока нет в списке
-        Game.users.push(client);//добавляем нового игрока
+    
+    var client = new Client(socket);
+
+    if (Game.users.indexOf(socket) == -1)//если такого игрока нет в списке
+        Game.users.push(socket);//добавляем нового игрока
     
     
-    client.on('req_room', function (client_name) {
-        
-        //Game.start();
-        if (Game.incompleateRoom == null)  //* if (Game.incompleateRoom ==- null)
-            Game.incompleateRoom = new Room("комната" + (Math.round(Math.random() * 10000)));
-        
-        var clnt = Client();
-        clnt.name = client_name;
-        clnt.color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);//создаётся случайный цвет для игрока
-        clnt.room = Game.incompleateRoom.name;
-        clnt.client = client;
-        
-        client.me = clnt;
+    
 
-        Game.incompleateRoom.addClient(client);
-        client.join(Game.incompleateRoom.name);
-        
-        client.emit('room', Game.incompleateRoom.name);
-        
-        if (Game.rooms == undefined)
-            Game.rooms = {};
-        Game.rooms[client.id] = Game.incompleateRoom;
-        
-        console.log("client id=" + client.id + "  incompleateRoom.name=" + Game.incompleateRoom.name);
-        
-        //если в неполной комнате не осталось свободных мест
-        if (!Game.incompleateRoom.hasPlace()) {
-            console.log("has no place");
-            io.sockets.in(Game.incompleateRoom.name).emit('compleate_room', '');//послать всем участникам комнаты сообщение, что их комната заполнена
-            
-            
-            if (Game.rooms[client.id].Maze == null || Game.rooms[client.id].Maze == undefined) {
-                Game.rooms[client.id].Maze = GenerateMaze(40, 40);//генерация лабиринта
-                Game.rooms[client.id].Positions = coordsArray(40, 40);//массив позиций в лабиринте
-                console.log("Лабиринт создан");
-            }
-            io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[client.id].Maze);
-            console.log("Лабиринт передан");
-            
-            //Game.incompleateRoom.ObjectDict = {};
-
-            for (var i = 0; i < Game.incompleateRoom.clients.length; i++) { //каждый клиент данной комнаты
-                var x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
-                var y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
-
-                while (Game.incompleateRoom.Positions[x][y] != null) {
-                    x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
-                    y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
-                }
-
-                Game.incompleateRoom.clients[i].me.X = x;
-                Game.incompleateRoom.clients[i].me.Y = y;
-                
-                Game.incompleateRoom.Positions[x][y] = ClientCopy(Game.incompleateRoom.clients[i].me);//помещается в случайное место лабиринта
-                Game.incompleateRoom.ObjectDict[Game.incompleateRoom.clients[i].me.name] = ClientCopy(Game.incompleateRoom.clients[i].me);;//записывает игрока в словарь объектов
-            }
-
-            io.sockets.in(Game.incompleateRoom.name).emit('positions', Game.incompleateRoom.Positions);
-            console.log("Позиции " + Game.incompleateRoom.Positions + " переданы");
-            
-            io.sockets.in(Game.incompleateRoom.name).emit('objects', Game.incompleateRoom.ObjectDict);
-            console.log("Объекты " + Game.incompleateRoom.ObjectDict + " переданы");
-
-
-            Game.incompleateRoom = null;//и отметить, что неполной комнаты нет
-            
+    
+     socket.emit('body', '<div id="nameInput"> Введите имя игрока' +
+            '<input type="text" name="nick_name" id="nick_name">' +
+            '<button type="button" id="nickNameButton" onclick="sendNickName()">OK</button>' +
+            '<div id="message_txt"></div>' +
+            '</div>');
+    
+    
+    
+    var getRoomsForSelect = function() {
+        var result = '';
+        for (i = 0; i < Game.rooms.length; i++) {
+            result += '<option class=' + Game.rooms[i].name + '>' + 
+                Game.rooms[i].name + ',  игроков ' + Game.rooms[i].users.length +'/' + Game.rooms[i].MaxClientCount + 
+                '</option>';
         }
+        return result
+    }
+    
+    socket.on('nick_name', function (name) {
+        client.name = name;
     });
     
-    client.on('moving', function (data) {
+    socket.on('select_room', function () {
         
-        if (Game.rooms[client.id] == undefined)
-            return;
+        socket.emit('body', '<div id="roomSelection"> Выберите комнату' +
+            '<select type="text" name="select_room" id="select_room">' +
+            getRoomsForSelect() 
+            + '</select>' +
+            '<button type="button" onclick = "sendJoinRoom()">Присоединиться</button>' +
+            '<button type="button" onclick = "createNewRoom()">Создать комнату</button>' +
+            '<div id="message_txt"></div>' +
+            '</div>');
 
+    });
+    
+    socket.on('new_room', function (room) {
+        var newRoom = Game.rooms[room.name] = new Room(room.name);
+        newRoom.MaxClientCount = room.MaxClients;
+        joinRoom(room.name);
+    });
+    
+    var joinRoom = function (room_name) {
+        var room = Game.rooms[room_name];
+        room.addClient(client);
+        client.color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);
+        client.room = room_name
+        socket.join(room_name);
+        Game.rooms[socket.id] = room;
+        
+    }
+    
+    socket.on('join_room', joinRoom );
+    
+    socket.on('start_game', function () {
+        var room = Game.rooms[socket.id];
+        
+        if (room.Maze == null || room.Maze == undefined) {
+            room.Maze = GenerateMaze(40, 40);//генерация лабиринта
+            room.Positions = coordsArray(40, 40);//массив позиций в лабиринте
+            console.log("Лабиринт создан");
+        }
+        
+        io.sockets.in(room.name).emit('body',laby.startGameContent);
+        io.sockets.in(room.name).emit('start_game', '');//послать всем участникам комнаты сообщение, что их комната заполнена
+        io.sockets.in(room.name).emit('maze', room.Maze);
+        console.log("Лабиринт передан");
+        
+        //Game.incompleateRoom.ObjectDict = {};
+        
+        for (var i = 0; i < room.clients.length; i++) { //каждый клиент данной комнаты
+            
+            var x, y;
+
+            do {
+                x = Math.round(Math.random() * (room.Maze.length - 1));
+                y = Math.round(Math.random() * (room.Maze[0].length - 1));
+            } while (room.Positions[x][y] != null);
+
+            room.clients[i].X = x;
+            room.clients[i].Y = y;
+            
+            room.Positions[x][y] = ClientCopy(room.clients[i]);//помещается в случайное место лабиринта
+            room.ObjectDict[room.clients[i].name] = ClientCopy(room.clients[i]);//записывает игрока в словарь объектов
+        }
+        
+        io.sockets.in(room.name).emit('positions', room.Positions);
+        console.log("Позиции " + room.Positions + " переданы");
+        
+        io.sockets.in(room.name).emit('objects', room.ObjectDict);
+        console.log("Объекты " + room.ObjectDict + " переданы");
+    });
+
+    
+    
+    socket.on('moving', function (data) {
+        
+        if (Game.rooms[data.roomName] == undefined)
+            return;
+        
+        var room = Game.rooms[data.roomName];
         var dx = 0, dy = 0;
         
-        var obj = Game.rooms[client.id].ObjectDict[data.name];
+        var obj = room.ObjectDict[data.name];
 
         switch (data.course) { 
             case "w":
@@ -340,24 +383,24 @@ io.sockets.on('connection', function (client) {
         }
         console.log("dx = " + dx);
 
-        if (Game.rooms[client.id].Positions[obj.X + dx][obj.Y + dy] == null)//если ячейка лабиринта, в которую запрашивается перемещение, пуста
+        if (room.Positions[obj.X + dx][obj.Y + dy] == null)//если ячейка лабиринта, в которую запрашивается перемещение, пуста
         {
             console.log("Место для движения "+ data.course+" свободно");
             
-            io.sockets.in(Game.rooms[client.id].name).emit('moving', { name: data.name, x: obj.X+ dx, y: obj.Y+dy })
+            io.sockets.in(room .name).emit('moving', { name: data.name, x: obj.X+ dx, y: obj.Y+dy })
 
-            var posObj = Game.rooms[client.id].Positions[obj.X][obj.Y];
+            var posObj = room .Positions[obj.X][obj.Y];
             posObj.X = obj.X + dx;
             posObj.Y = obj.Y + dy;
-            Game.rooms[client.id].Positions[posObj.X][posObj.Y] = posObj;
-            Game.rooms[client.id].Positions[obj.X][obj.Y] = null;
+            room .Positions[posObj.X][posObj.Y] = posObj;
+            room .Positions[obj.X][obj.Y] = null;
 
             obj.X += dx;
             obj.Y += dy;
         }
         else {
             console.log("Место для движения " + data.course + " занято");
-            console.log(Game.rooms[client.id].Positions[obj.X + dx][obj.Y + dy]);
+            console.log(room .Positions[obj.X + dx][obj.Y + dy]);
             console.log(obj);
         }
             
@@ -371,14 +414,14 @@ io.sockets.on('connection', function (client) {
 
     });
 
-    client.on('message', function (message) {//если от клиента пришло сообщение
+    socket.on('message', function (message) {//если от клиента пришло сообщение
         try {
-            io.sockets.in(Game.rooms[client.id].name).emit('message', message);//отправить это сообщение всем членам его комнаты
+            io.sockets.in(Game.rooms[socket.id].name).emit('message', message);//отправить это сообщение всем членам его комнаты
           //  client.broadcast.emit('message', message); //отправить всем, кроме отправителя
         }
         catch (e) {
             //если пользователь уходит, то удалить его из списка
-            userId = Game.users.indexOf(client);
+            userId = Game.users.indexOf(socket);
             if (userId != -1)
                 delete Game.users[userId];
 
@@ -387,7 +430,7 @@ io.sockets.on('connection', function (client) {
         }
     });
     
-
+    
     io.sockets.emit('stats', [
         'Всего игр: ' + countGames,
         'Уникальных игроков: ' + Object.keys(countPlayers).length,

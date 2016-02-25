@@ -1,6 +1,6 @@
 ﻿var util = require('util'), EventEmitter = require('events').EventEmitter;
 
-var Labyquest = module.exports = function () {
+var Labyquest = module.exports.Labyquest = function () {
 
     
     //this.games = [];// Массив [id игры = объект игры]
@@ -29,16 +29,17 @@ util.inherits(Labyquest, EventEmitter);
 
 
 
-var Room = module.exports = function (name) {
+var Room = module.exports.Room = function (name) {
 
     EventEmitter.call(this);// Инициализируем события
     
+
     this.Maze = null;
     this.Positions = [];//позиции игроков и предметов в лабиринте //служит для проверки, занята ли ячейка лабиринта
     this.ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
-
+    this.MaxClientCount = 20;
     this.name = name;
-    var clients = this.clients = [] ///var clients = this.clients = []
+    this.clients = [] ///var clients = this.clients = []
     
     //this.addClient = function (client) {
     //    if (clients.length < 2)
@@ -46,7 +47,7 @@ var Room = module.exports = function (name) {
     //};
     
     this.hasPlace = function () {        
-        return this.clients.length < 2;
+        return this.clients.length < this.MaxClientCount;
     }
 }
 util.inherits(Room, EventEmitter);
@@ -116,3 +117,47 @@ util.inherits(Cell, EventEmitter);
     
 //    EventEmitter.call(this);// Инициализируем события
 //}
+
+
+module.exports.startGameContent = ' <div class="me-field" id="mazefield"> '+
+'        < div class="maze" id="maze"></div></div>'+
+'<div class="me-field" id="me-field">'+
+
+'<div class="right-panel">'+
+'<div class="demo">'+
+'<a class="permalink" href="http://www.itlessons.info/nodejs/simple-chat-with-nodejs-and-socket-io/">← cсылка на статью</a>'+
+
+'<h1>LabyQuest</h1>'+
+
+'<button id="reload">Новая игра</button>'+
+'<div id="stats" class="ui-widget" valign="top"></div>'+
+'<hr />'+
+
+'<table>'+
+'<tr>'+
+'<td id="board" class="ui-widget" valign="top">'+
+'<div id="masked" class="ui-widget-shadow ui-corner-all ui-widget-overlay"></div>'+
+'<div id="timerpanel">'+
+'Время до конца хода:'+
+'<span id="timer">15</span> сек.'+
+'</div>'+
+'<table class="ui-widget ui-corner-all" cellpadding="0" cellspacing="0" align="left" id="board-table"></table>'+
+'</td>'+
+'</tr>'+
+'</table>'+
+
+'<div class="chat">'+
+'<div class="messages" id="messages"></div>'+
+
+'<div class="panel">'+
+'<span class="nick"></span>'+
+'<input type="text" name="message_text" id="message_text">'+
+'<button type="button" id="message_btn">Отправить</button>'+
+'</div>'+
+'</div>'+
+'</div>'+
+'</div>'+
+
+'</div>'
+
+
