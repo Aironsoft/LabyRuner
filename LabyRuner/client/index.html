@@ -20,7 +20,7 @@
         var Objects = $("#objects");
         var life = $("#life");
         var scores = $("#scores");
-        var maze = null;
+        var maze = $("#maze");
         var message_txt = null;
         var cellSideSize = 1;//размер стороны ячейки
         var room = null;    
@@ -69,7 +69,9 @@
         });
         
         $('#submit').click(function () {
-            connect($('#input-name')[0].value);
+            var n=$('#input-name')[0].value;
+            if(n!=null && n!="")
+                connect($('#input-name')[0].value);
         });
         
         $('#reload').click(function () {
@@ -116,6 +118,7 @@
         
         
         function buildMaze(data) {
+            maze.empty();//очистить содержимое лабиринта
             
             var l = '<div class="grid" id="grid"></div>';
     
@@ -146,7 +149,6 @@
                 l += row;
             }
     
-            maze = $("#maze");
             maze
                             .addClass("large")// добавим этой копии класс newElement
                             .append(l)
@@ -266,17 +268,34 @@
         }
         
         function createObject(object) {
-            var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
-            l += '<div class="ball" style="background-color:' + object.color + '">'+ object.name +'</div>';
-            l += '</div>';
-            Objects
-                .append(l);
             
-            quickMoveObject(object.name, object.X, object.Y);
+            if(object.type=="rune") { //если это руна
+                var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
+                l += '<div class="rune">'+ object.value +'</div>';
+                l += '</div>';
+                Objects
+                    .append(l);
+                    
+                quickMoveObject(object.name, object.X, object.Y);
+            }
+            else if(object.type=="player") { //если это игрок
+                if(object.name!=name)//если это не этот игрок
+                {
+                    var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
+                    l += '<div class="ball" style="background-color:' + object.color + '">'+ object.name +'</div>';
+                    l += '</div>';
+                    Objects
+                        .append(l);
+            
+                    quickMoveObject(object.name, object.X, object.Y);
+                }
+            }
         }
     
         
         function buildObjects(data) {
+            Objects.empty();//удалить игроков и объекты
+            
             for ( var key in data) {
                 if (key == name) {
                     Me = data[key];
@@ -305,11 +324,32 @@
                 var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
                 l += '<div class="rune">'+ object.value +'</div>';
                 l += '</div>';
-               Objects
+                Objects
                     .append(l);
+                    
+                quickMoveObject(object.name, object.X, object.Y);
             }
+            else if(object.type=="player") { //если это игрок
+                if(object.name!=name)//если это не этот игрок
+                {
+                    msg_system('Игрок ' + object.name + ' присоединился к игре');
+                    
+                    var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
+                    l += '<div class="ball" style="background-color:' + object.color + '">'+ object.name +'</div>';
+                    l += '</div>';
+                    Objects
+                        .append(l);
             
-            quickMoveObject(object.name, object.X, object.Y);
+                    quickMoveObject(object.name, object.X, object.Y);
+                }
+                else 
+                {
+                    $("#me").remove();//удалить старый маркер игрока, если он вдруг есть
+                    Me = object;
+                    createMe();
+                }
+                
+            }
         }
         
         //Обновляет показатели здоровья игрока с указанным именем

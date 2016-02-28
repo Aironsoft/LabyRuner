@@ -1,4 +1,4 @@
-﻿var util = require('util'), EventEmitter = require('events').EventEmitter;
+var util = require('util'), EventEmitter = require('events').EventEmitter;
 
 var Labyquest = module.exports = function () {
 
@@ -18,7 +18,11 @@ var Labyquest = module.exports = function () {
     
 
     /////
-    this.rooms = {};
+    this.rooms = {};//по socket.id возвращает комнату
+    
+    this.unfullRooms = {};//по room.name возвращает комнату
+    this.fullRooms = {};//по room.name возвращает комнату
+    
     this.incompleateRoom = null;
 
     //this.generateMaze = function (rows, columns) {
@@ -33,22 +37,30 @@ var Room = module.exports = function (name) {
 
     EventEmitter.call(this);// Инициализируем события
     
+    //this.isRunning = false;
+    this.isBuilded = false;
+    
     this.Maze = null;
     this.Positions = [];//позиции игроков и предметов в лабиринте //служит для проверки, занята ли ячейка лабиринта
     this.ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
 
-    this.MaxClientCounts=2;
+    this.MinClientCounts=2;//минимальное количество клиентов для начала игры
+    this.MaxClientCounts=12;//максимальное количество клиентов в комнате
 
     this.name = name;
-    var clients = this.clients = [] ///var clients = this.clients = []
+    var clients = this.clients = {};  // clients[client.id]=client
     
     //this.addClient = function (client) {
     //    if (clients.length < 2)
     //        clients.push(client);
     //};
     
-    this.hasPlace = function () {        
-        return this.clients.length < this.MaxClientCounts;
+    this.hasMinClients = function () {        
+        return Object.keys(this.clients).length >= this.MinClientCounts;
+    }
+    
+    this.hasFreePlace = function () {        
+        return Object.keys(this.clients).length < this.MaxClientCounts;
     }
 }
 util.inherits(Room, EventEmitter);
@@ -69,8 +81,8 @@ Labyquest.prototype.start = function () {
  * Добавляет клиента в комнату
  */
 Room.prototype.addClient = function (client) {
-    if (this.clients.length < this.MaxClientCounts)
-        this.clients.push(client);
+    if (Object.keys(this.clients).length < this.MaxClientCounts)
+        this.clients[client.id]=client;
 }
 
 

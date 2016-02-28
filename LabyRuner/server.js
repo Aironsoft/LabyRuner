@@ -28,8 +28,10 @@ var sockets = [];
 var Labyquest = require('./models/Labyquest.js');//получение модели лабиринта
 var Room = require('./models/Labyquest.js');//получение модели комнаты
 var countGames = 0, countPlayers = [], Game = new Labyquest();
-Game.rooms = [];
+Game.rooms = {};
 Game.users = [];
+Game.unfullRooms = {};
+Game.fullRooms = {};
 var runes = ["Fi", "Re", "Gu", "Ne"];
 
 
@@ -255,77 +257,124 @@ io.on('connection', function (socket) {
     else if (Game.users.indexOf(socket) == -1)//если такого игрока нет в списке
         Game.users.push(socket);//добавляем нового игрока
     
-    socket.on('req_room', function (client_name) {
-        
-        //Game.start();
-        if (Game.incompleateRoom == null)  //* if (Game.incompleateRoom ==- null)
-            Game.incompleateRoom = new Room("комната" + (Math.round(Math.random() * 10000)));
+    socket.on('req_room', function (client_name) { //от клиента пришёл запрос на присоединение к комнате
         
         var clnt = Client();
         
-        if(client_name!=null) {
+        // if(client_name!=null) {
             clnt.name = client_name;
-        }
-        else {
-            clnt.name = 'Игрок_' + (Math.round(Math.random() * 10000));
-        }
+        // }
+        // else {
+        //     clnt.name = 'Игрок_' + (Math.round(Math.random() * 10000));
+        // }
+        
         clnt.color = '#' + (Math.random() * 0xFFFFFF << 0).toString(16);//создаётся случайный цвет для игрока
-        clnt.room = Game.incompleateRoom.name;
         clnt.client = socket;
         
         socket.me = clnt;
-
-        Game.incompleateRoom.addClient(socket);
-        socket.join(Game.incompleateRoom.name);
         
-        socket.emit('room', Game.incompleateRoom.name);
+        var room=null;//комната игрока
         
-        if (Game.rooms == undefined)
-            Game.rooms = {};
-        Game.rooms[socket.id] = Game.incompleateRoom;
-        
-        console.log("client id=" + socket.id + "  incompleateRoom.name=" + Game.incompleateRoom.name);
-        
-        //если в неполной комнате не осталось свободных мест
-        if (!Game.incompleateRoom.hasPlace()) {
-            console.log("has no place");
-            io.sockets.in(Game.incompleateRoom.name).emit('compleate_room', '');//послать всем участникам комнаты сообщение, что их комната заполнена
-            
-            
-            if (Game.rooms[socket.id].Maze == null || Game.rooms[socket.id].Maze == undefined) {
-                Game.rooms[socket.id].Maze = GenerateMaze(10, 10);//генерация лабиринта
-                Game.rooms[socket.id].Positions = coordsArray(10, 10);//массив позиций в лабиринте
-                console.log("Лабиринт создан");
+        //Game.start();
+        if (Game.incompleateRoom == null)  //* if (Game.incompleateRoom ==- null)
+        {
+            var keys=Object.keys(Game.unfullRooms); //массив ключей словаря незаполненных комнат
+            var unfullRoomsCount=keys.length;//количество незаполненных комнат
+            if(unfullRoomsCount>0)
+            {
+                var r = Math.round(Math.random() * (unfullRoomsCount-1));//выбор идентификатора случайного ключа
+                room=Game.unfullRooms[keys[r]]; //выбор комнаты из списка незаполненных по случайному ключу
             }
-            io.sockets.in(Game.incompleateRoom.name).emit('maze', Game.rooms[socket.id].Maze);
-            console.log("Лабиринт передан");
+            else //если незаполненных комнат нет
+            {
+                Game.incompleateRoom = new Room("комната" + (Math.round(Math.random() * 10000)));
+                room=Game.incompleateRoom;
+            }
+        }
+        else //если есть незаполненная комната
+        {
+            room = Game.incompleateRoom;
+        }
+        
+        
+        room.addClient(socket);
+        socket.join(room.name);
+        Game.rooms[socket.id] = room;
+        socket.me.room = room.name;
+        
+        socket.emit('room', room.name);
+        
+        
+        console.log("client id=" + socket.id + "  incompleateRoom.name=" + room.name);
+        
+        //если в неполной комнате заполнено минимальное количество мест
+        if (room.hasMinClients()) {
             
-            //Game.incompleateRoom.ObjectDict = {};
-
-            for (var i = 0; i < Game.incompleateRoom.clients.length; i++) { //каждый клиент данной комнаты
-                var x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
-                var y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
-
-                while (Game.incompleateRoom.Positions[x][y] != null) {
-                    x = Math.round(Math.random() * (Game.incompleateRoom.Maze.length - 1));
-                    y = Math.round(Math.random() * (Game.incompleateRoom.Maze[0].length - 1));
+            if(room.isBuilded)//если комната построена  //room.hasFreePlace &&  в комнате остались свободные места и она
+            {
+                // лабиринт, позиции и объекты отправляются лишь данному клиенту
+                socket.emit('maze', room.Maze);
+                socket.emit('positions', room.Positions);
+                socket.emit('objects', room.ObjectDict);
+                
+                var x = Math.round(Math.random() * (room.Maze.length - 1));
+                var y = Math.round(Math.random() * (room.Maze[0].length - 1));
+                
+                while (room.Positions[x][y] != null) {
+                    x = Math.round(Math.random() * (room.Maze.length - 1));
+                    y = Math.round(Math.random() * (room.Maze[0].length - 1));
                 }
 
-                Game.incompleateRoom.clients[i].me.X = x;
-                Game.incompleateRoom.clients[i].me.Y = y;
+                socket.me.X = x;
+                socket.me.Y = y;
                 
-                Game.incompleateRoom.Positions[x][y] = ClientCopy(Game.incompleateRoom.clients[i].me);//помещается в случайное место лабиринта
-                Game.incompleateRoom.ObjectDict[Game.incompleateRoom.clients[i].me.name] = ClientCopy(Game.incompleateRoom.clients[i].me);//записывает игрока в словарь объектов
+                room.Positions[x][y] = ClientCopy(socket.me);//помещается в случайное место лабиринта
+                room.ObjectDict[socket.me.name] = ClientCopy(socket.me);//записывает игрока в словарь объектов
+                    
+                io.sockets.in(room.name).emit('spawn', ClientCopy(socket.me));//отправить это сообщение всем членам его комнаты
+                
+                return;
             }
-
-            io.sockets.in(Game.incompleateRoom.name).emit('positions', Game.incompleateRoom.Positions);
-            console.log("Позиции " + Game.incompleateRoom.Positions + " переданы");
-            
-            io.sockets.in(Game.incompleateRoom.name).emit('objects', Game.incompleateRoom.ObjectDict);
-            console.log("Объекты " + Game.incompleateRoom.ObjectDict + " переданы");
-
-
-            Game.incompleateRoom = null;//и отметить, что неполной комнаты нет
+            else //если комната не построена
+            {
+                io.sockets.in(room.name).emit('compleate_room', '');//послать всем участникам комнаты сообщение, что их комната заполнена
+                
+                if (room.Maze == null || room.Maze == undefined) {
+                    room.Maze = GenerateMaze(10, 10);//генерация лабиринта
+                    room.Positions = coordsArray(10, 10);//массив позиций в лабиринте
+                    console.log("Лабиринт создан");
+                }
+                io.sockets.in(room.name).emit('maze', room.Maze);
+                
+                console.log("Лабиринт передан");
+    
+                for ( var key in room.clients) {
+                    var x = Math.round(Math.random() * (room.Maze.length - 1));
+                    var y = Math.round(Math.random() * (room.Maze[0].length - 1));
+    
+                    while (room.Positions[x][y] != null) {
+                        x = Math.round(Math.random() * (room.Maze.length - 1));
+                        y = Math.round(Math.random() * (room.Maze[0].length - 1));
+                    }
+    
+                    room.clients[key].me.X = x;
+                    room.clients[key].me.Y = y;
+                    
+                    room.Positions[x][y] = ClientCopy(room.clients[key].me);//помещается в случайное место лабиринта
+                    room.ObjectDict[room.clients[key].me.name] = ClientCopy(room.clients[key].me);//записывает игрока в словарь объектов
+                }
+    
+                io.sockets.in(room.name).emit('positions', room.Positions);
+                console.log("Позиции " + room.Positions + " переданы");
+                
+                io.sockets.in(room.name).emit('objects', room.ObjectDict);
+                console.log("Объекты " + room.ObjectDict + " переданы");
+                
+                room.isBuilded = true;//отметить, что комната построена
+                
+                Game.unfullRooms[room.name]=room;//поместить текущую комнату в список неполных
+                Game.incompleateRoom = null;//и отметить, что неполной комнаты нет
+            }
             
         }
     });
@@ -462,7 +511,14 @@ io.on('connection', function (socket) {
             if(obj!=undefined) {
                 Game.rooms[socket.id].Positions[obj.X][obj.Y] = null;//удалить объект из массива позиций
                 delete Game.rooms[socket.id].ObjectDict[data.name];//удалить объект из словаря объектов
-                //Game.rooms[socket.id].ObjectDict.Remove(data.name);//удалить объект из словаря объектов
+                
+                if(obj.type=="player") {
+                    delete Game.rooms[socket.id].clients[socket.id];//удалить объект из списка клиентов в комнате
+                     
+                    if (!Game.rooms[socket.id].hasMinClients()) {  //если в неполной комнате не заполнено минимальное количество мест
+                        Game.incompleateRoom=Game.rooms[socket.id];
+                    }
+                }
             }
         }
     });

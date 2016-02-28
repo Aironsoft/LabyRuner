@@ -6,7 +6,6 @@ body {
     position: static;
     display: table;
     width: 25vmax;
-    margin: 2vmin 30px 50px 3vmin;
 }
 
 .life {
@@ -17,6 +16,7 @@ body {
     padding: 10px;
     font-family: "PT Sans", Verdana, Arial, sans-serif;
     font-size: 18px;
+    margin: 2vmin 30px 50px 3vmin;
 }
 
 .scores {
@@ -25,9 +25,10 @@ body {
     background-color: #cccc00;
     opacity: 0.85;
     padding: 10px;
-    margin-top: 7%;
+    /*margin-top: 7%;*/
     font-family: "PT Sans", Verdana, Arial, sans-serif;
     font-size: 18px;
+    margin: 7% 30px 50px 3vmin;
 }
 
 .rating {
@@ -42,7 +43,7 @@ body {
     position: static;
     display: table;
     width: 25vmax;
-    margin: 10px 30px 50px auto;
+    margin: 10px 0.5% 50px auto;
 }
 
 .demo {
@@ -57,6 +58,8 @@ body {
 
 .chat .messages{
     height: 100px;
+    max-width: 25vmax;
+    word-wrap: break-word;
     border: 1px solid #d4d4d4;
     overflow-y: scroll;
     overflow-x: hidden;
