@@ -10,6 +10,17 @@ var http = require('http');
 var server = http.createServer(app);
 var io = require('socket.io').listen(server, options);
 
+server.listen(PORT);
+
+app.use(express.static(__dirname + '/Labyrint'));
+//app.use('/labyrint', express.static(__dirname + ''));
+
+app.get('/', function (req, res) {
+    res.sendfile(__dirname + '/index.html');
+});
+
+
+
 var laby = require('./models/Labyquest.js');//получение модели лабиринта
 var Room = laby.Room;//получение модели комнаты
 var Labyquest = laby.Labyquest;
@@ -228,15 +239,6 @@ var ClientCopy = function (client) {
 }
 
 
-
-server.listen(PORT);
-
-app.use(express.static(__dirname + '/Labyrint'));
-//app.use('/labyrint', express.static(__dirname + ''));
-
-app.get('/', function (req, res) {
-    res.sendfile(__dirname + '/index.html');
-});
 
 
 var countGames = 0, countPlayers = [], Game = new Labyquest();
