@@ -1,0 +1,93 @@
+    body {
+    font-family:verdana;
+    font-size:15px;
+    }
+    
+.link { color:#fff; text-decoration:none }
+.link:hover { color:#fff; text-decoration:underline }
+
+#mask {
+    position:absolute;
+    left:0;
+    top:0;
+    z-index:9000;
+    background-color:#000;
+    display:none;
+    }
+#boxes .window {
+    position:absolute;
+    left:0;
+    top:0px;
+    -top: 40px;
+    width:440px;
+    height:200px;
+    display:none;
+    z-index:9999;
+    padding: 20px;
+    overflow: hidden;
+    }  
+#boxes #dialog {
+    width:375px; 
+    height: auto;
+    padding:10px;
+    background-color:#ffffff;
+    }
+
+.top {
+    position:initial;
+    left:0;
+    top:0;
+    width:370px;
+    height:30px;
+    background: #ff2277;
+    padding: 8px 20px 6px 10px;
+    }
+.close {
+    float:right;
+}
+
+/* Элементы формы контактов */
+.textbox{
+    height:45px;
+    width:100%;
+    border-radius:3px;
+    border:rgba(0,0,0,.3) 1px solid;
+    box-sizing:border-box;
+    font-size:14px; 
+    padding:8px;
+    margin-top: 10px;
+    margin-bottom:20px;  
+}
+
+/* кнопки */
+.btn {
+    background: #fff;
+    border: #555 solid 1px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    padding: 8px 15px;
+    text-decoration: none;
+    text-align: center;
+    min-width: 60px;
+    position: relative;
+}
+.btn:hover, .btn:focus {
+    background: #f2f2f2;
+}
+
+/* кнопка "отправить" формы */
+.btn-form{
+    width:100%;
+    height:45px;  
+    border:rgba(0,0,0,.2) 1px solid;
+    box-sizing:border-box;
+    background: #dedede;
+    color:#555;
+    transition:background .4s;
+}
+/* Изменение фона кнопки при наведении */
+.btn-form:hover{
+    background: #f2f2f2;
+}

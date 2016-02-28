@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="en" ng-app>
+  <head>
+    <title>LabyRuner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--<link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">-->
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="/css/modal.css">
+    <script>
+    
+      function GameController($scope) {
+        var socket = io.connect();
+        
+        var name = 'Игрок_' + (Math.round(Math.random() * 10000));
+        var messages = $("#messages");
+        var body = $("body");
+        var mazefield = $("#mazefield");
+        var meField = $("#me-field");
+        var Objects = $("#objects");
+        var life = $("#life");
+        var scores = $("#scores");
+        var maze = null;
+        var message_txt = null;
+        var cellSideSize = 1;//размер стороны ячейки
+        var room = null;    
+        var Maze = null;
+        var rows = 0;
+        var columns = 0;
+        var Positions = null;//положения объектов в лабиринте
+        var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
+        var Me = null; //объект игрока
+        var idPrefix = "id";
+        var downButton = 0;
+        var axisQuarter = 0; //четверть поворота направления
+        var dx=0, dy=0; //смещение по осям при повороте
+        var spawningTime=1000;//период запроса серверу на создание в лабиринте новых объектов
+        var isRunning = false;//идёт ли игра
+        
+        ///////
+        
+        $(window).load(function()
+        {
+            openModal();
+        });
+        
+        function openModal() {
+            var id='#dialog';
+            var maskHeight = $(document).height();
+            var maskWidth = $(window).width();
+            $('#mask').css({'width':maskWidth,'height':maskHeight});
+            $('#mask').fadeIn(1000); 
+            $('#mask').fadeTo("slow",0.8); 
+            var winH = $(window).height();
+            var winW = $(window).width();
+            $(id).css('top',  winH/2-$(id).height()/2);
+            $(id).css('left', winW/2-$(id).width()/2);
+            $(id).fadeIn(2000); 
+        };
+        
+        $('.window .close').click(function (e) { 
+            e.preventDefault();
+            $('#mask, .window').hide();
+        });
+        
+        $('#mask').click(function () {
+            $(this).hide();
+            $('.window').hide();
+        });
+        
+        $('#submit').click(function () {
+            connect($('#input-name')[0].value);
+        });
+        
+        $('#reload').click(function () {
+            openModal();
+        });
+        
+        /////////
+    
+        function safe(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        
+        function msg(nick, message) {
+        var m = '<div class="msg">' +
+                        '<span class="user">' + safe(nick) + ':</span> ' 
+                        + safe(message) +
+                        '</div>';
+        messages
+                        .append(m)
+                        .scrollTop(messages[0].scrollHeight);
+        }
+        
+        function msg_system(message) {
+            var m = '<div class="msg system">' + safe(message) + '</div>';
+            messages
+                            .append(m)
+                            .scrollTop(messages[0].scrollHeight);
+        }
+        
+        function objectSpawning() { //функция запроса серверу на создание в лабиринте новых объектов
+            socket.emit("wantspawn");//, { name: Me.name, course: course }
+            //msg_system('Отправлен запрос на спаун объекта');
+            
+            spawningTime = 5000+Math.round(Math.random() *( 20000));
+            
+            if(isRunning)//если игра идёт
+                setTimeout(function(){ objectSpawning(); }, spawningTime);//запуск функции периодического запроса новых объектов
+        }
+        
+        function getRotationMatrixString(degree,x,y){
+            return " matrix("+Math.cos(degree)+"," +Math.sin(degree)+"," +(-Math.sin(degree))+","
+            +Math.cos(degree)+","+(-x*(Math.cos(degree)-1)+y*Math.sin(degree)) +"," +(-y*(Math.cos(degree)-1)-x*Math.sin(degree))+")";
+        }
+        
+        
+        function buildMaze(data) {
+            
+            var l = '<div class="grid" id="grid"></div>';
+    
+            for (var i = 0; i < data.length; i++) { //сначала задаются строки
+                
+                var row = '<div class="row" id="row_' + i + '">';
+    
+                for (var j = 0; j < data[0].length; j++) {
+                    var cell = '<div id="'+ idPrefix + j + "x" + i + '" class="cell'; //* class="cell
+                    if (data[i][j].has_way)
+                        cell += ' in';
+                    if (data[i][j].north)
+                        cell += ' n';
+                    if (data[i][j].west)
+                        cell += ' w';
+                    if (data[i][j].south)
+                        cell += ' s';
+                    if (data[i][j].east)
+                        cell += ' e';
+                    
+                    cell += '"></div>';
+    
+                    row += cell;
+                }
+    
+                row += '</div>'
+    
+                l += row;
+            }
+    
+            maze = $("#maze");
+            maze
+                            .addClass("large")// добавим этой копии класс newElement
+                            .append(l)
+                            .scrollTop(messages[0].scrollHeight);
+            
+            cellSideSize = $("#maze")[0].scrollHeight / rows;
+        }
+        
+        
+        function quickMoveMe()
+        {
+            $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize,
+                'top': Me.posY - Me.Y * cellSideSize },
+                0, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
+        }
+        
+        function stepMoveMe(dx, dy) {
+            
+            Me.X += dx;
+            Me.Y += dy;
+            $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize,
+                'top': Me.posY - Me.Y * cellSideSize },
+                500, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
+            
+            
+            // var ddx=0, ddy=0;
+            
+            // switch(axisQuarter)
+            // {
+            //     case 0:
+            //         ddx = dx;
+            //         ddy = dy;
+            //         break;
+            //     case -0:
+            //         ddx = dx;
+            //         ddy = dy;
+            //         break;
+            //     case 3: //e
+            //         ddx = -dy;
+            //         ddy = -dx;
+            //         break;
+            //     case -1: //e
+            //         ddx = -dy;
+            //         ddy = -dx;
+            //         break;
+            //     case 1:
+            //         ddx = dy;
+            //         ddy = dx;
+            //         break;
+            //     case -3:
+            //         ddx = dy;
+            //         ddy = dx;
+            //         break;
+            //     case 2:
+            //         ddx = -dx;
+            //         ddy = -dy;
+            //         break;
+            //     case -2:
+            //         ddx = -dx;
+            //         ddy = -dy;
+            //         break;
+            // }
+            
+            // $("#mazefield").animate({ 'left': Me.posX - (Me.X+ddx) * cellSideSize, //(Me.X+Math.sin(90*axisQuarter/180*3.141592))
+            //     'top': Me.posY - (Me.Y+ddy) * cellSideSize }, //(Me.Y-Math.cos(90*axisQuarter/180*3.141592)) //-dy
+            //     500, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
+               
+            // Me.X += dx;
+            // Me.Y += dy;
+            
+            // quickMoveMe();
+            
+            // var matrix = getRotationMatrixString( 90*axisQuarter/180*3.141592,     //угол поворота
+            //                                     (Me.X+0.5-columns/2)*cellSideSize, //X-координата оси поворота
+            //                                     (Me.Y+0.5-rows/2)*cellSideSize);   //Y-координата оси поворота
+            // $("#mazefield").transformAnimate({
+            //             transform: matrix,
+            //             duration: 0
+            //         });
+            
+        }
+        
+        
+        function quickMoveObject(name, X, Y) {
+            $("#" + name).animate({ 'left': X * cellSideSize,
+                'top': Y * cellSideSize },
+                50, function () { });//сдвиг объекта относительно лабиринта
+        }
+    
+        function stepMoveObject(name, X, Y) {
+            $("#"+ name).animate({ 'left': X * cellSideSize,
+                'top': Y * cellSideSize },
+                500, function () { });//сдвиг объекта относительно лабиринта
+        }
+    
+        
+        function createMe() {
+            var l = '<div class="me" id="me" margin-left="46vmax">';
+            l += '<div class="ball" style="background-color:'+Me.color+'">' + Me.name + '</div>';
+            l += '</div>'
+            meField
+                .append(l);
+            var m = $("#me");
+            Me.posX = m[0].offsetLeft;
+            Me.posY = m[0].offsetTop;
+            
+            quickMoveMe();
+            
+            //повернуть, чтоб лабиринт прямо показывался
+            var matrix = getRotationMatrixString( 0,     //угол поворота
+                                                (Me.X+0.5-columns/2)*cellSideSize, //X-координата оси поворота
+                                                (Me.Y+0.5-rows/2)*cellSideSize);   //Y-координата оси поворота
+            $("#mazefield").transformAnimate({
+                        transform: matrix,
+                        duration: 0
+                    });
+        }
+        
+        function createObject(object) {
+            var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
+            l += '<div class="ball" style="background-color:' + object.color + '">'+ object.name +'</div>';
+            l += '</div>';
+            Objects
+                .append(l);
+            
+            quickMoveObject(object.name, object.X, object.Y);
+        }
+    
+        
+        function buildObjects(data) {
+            for ( var key in data) {
+                if (key == name) {
+                    Me = data[key];
+                    createMe();
+                }
+                else {
+                    createObject(data[key]);
+                }
+            }
+            
+            changeLife(Me.name);//обновить показатели жизни игрока
+            changeScores(Me.name);//обновить показатели очков игрока
+            
+            setInterval(objectSpawning(), spawningTime);//запуск функции периодического запроса новых объектов
+            
+            Positions[Me.X][Me.Y] = null;//удалить себя из массива позиций
+            //ObjectDict.Remove(Me.name);//удалить себя из словаря объектов
+            delete ObjectDict[Me.name];
+        }
+        
+        function spawn(object) {
+            Positions[object.X][object.Y]=object;
+            ObjectDict[object.name] = object;
+            
+            if(object.type=="rune") { //если это руна
+                var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
+                l += '<div class="rune">'+ object.value +'</div>';
+                l += '</div>';
+               Objects
+                    .append(l);
+            }
+            
+            quickMoveObject(object.name, object.X, object.Y);
+        }
+        
+        //Обновляет показатели здоровья игрока с указанным именем
+        function changeLife(nm) {
+            if(nm == name) //если нужно изменить показатели здоровья игрока
+            {
+                life.empty();
+                life.append("Жизнь: "+Me.life);
+            }
+        }
+        
+        function changeScores(nm) {
+            if(nm == name) //если нужно изменить показатели здоровья игрока
+            {
+                scores.empty();
+                scores.append("Очки: "+Me.scores);
+            }
+        }
+    
+        window.onresize = function () { //если изменился размер окна
+            msg_system('Окно изменилось!');
+            var m = $("#me");
+            Me.posX = m[0].offsetLeft;
+            Me.posY = m[0].offsetTop;
+            
+            cellSideSize = $("#maze")[0].scrollHeight / rows; //пересчёт размера ячейки
+            
+            quickMoveMe();
+    
+            for (var key in ObjectDict) {
+                if (key != name) {
+                    quickMoveObject(key, ObjectDict.key.X, ObjectDict.key.Y);
+                }
+            }
+        };
+        
+        $(document).keyup(function (e) {
+            if (e.keyCode === downButton) {
+                downButton = 0;
+            }
+            
+        });
+        
+        $(document).keydown(function (e) {
+            if(!isRunning)//если игра не запущена, то не обрабатывать
+                return;
+            if ((e.keyCode <= 40 && e.keyCode >= 37) || e.keyCode == 65 || e.keyCode == 87 || e.keyCode == 68 || e.keyCode == 83) {
+                downButton = e.keyCode;
+            }
+            buttonDownIteration();
+        });
+        
+       
+        
+        function buttonDownIteration() {
+            
+            if (!downButton)
+                return;
+                
+            var buttonTimeout=0;
+            
+            var course = null;//направление движения
+    
+            switch ( downButton ) { 
+                case 37, 65: // a
+                    course = "w";
+                    // axisQuarter++;
+                    
+                    // dy=-Math.cos(90*axisQuarter/180*3.141592); //?
+                    
+                    
+                    // var matrix = getRotationMatrixString( 90*axisQuarter/180*3.141592,     //угол поворота
+                    //                                     (Me.X+0.5-columns/2)*cellSideSize, //X-координата оси поворота
+                    //                                     (Me.Y+0.5-rows/2)*cellSideSize);   //Y-координата оси поворота
+                    
+                    // $("#mazefield").transformAnimate({
+                    //     transform: matrix,
+                    //     duration: 500
+                    // });
+                    
+                    // if(axisQuarter==4 || axisQuarter==-4){
+                    //     axisQuarter=0;
+                    // }
+                    
+                    buttonTimeout+=400;
+                    
+                    break;
+                case 38, 87: // w
+                    // switch(axisQuarter)
+                    // {
+                    //     case 0:
+                    //         course = "n";
+                    //         break;
+                    //     case -0:
+                    //         course = "n";
+                    //         break;
+                    //     case 3:
+                    //         course = "e";
+                    //         break;
+                    //     case -1:
+                    //         course = "e";
+                    //         break;
+                    //     case 1:
+                    //         course = "w";
+                    //         break;
+                    //     case -3:
+                    //         course = "w";
+                    //         break;
+                    //     case 2:
+                    //         course = "s";
+                    //         break;
+                    //     case -2:
+                    //         course = "s";
+                    //         break;
+                    // }
+                    course = "n";
+                    
+                    buttonTimeout+=200;
+                    
+                    break;
+                case 39, 68: // d
+                    course = "e";
+                    
+                    // axisQuarter--;
+                    
+                    // dy=-Math.cos(90*axisQuarter/180*3.141592);
+                    // //axisQuarter=axisQuarter % 4;//(axisQuarter - axisQuarter % 4) / 4;
+
+                    // var matrix = getRotationMatrixString( 90*axisQuarter/180*3.141592,
+                    //                                     (Me.X+0.5-columns/2)*cellSideSize,
+                    //                                     (Me.Y+0.5-rows/2)*cellSideSize);
+                    
+                    // $("#mazefield").transformAnimate({
+                    //     transform: matrix,
+                    //     duration: 500
+                    // });
+                    
+                    // if(axisQuarter==4 || axisQuarter==-4){
+                    //     axisQuarter=0;
+                    // }
+                    
+                    buttonTimeout+=400;
+                    
+                    break;
+                case 40, 83: // s
+                    // switch(axisQuarter)
+                    // {
+                    //     case 0:
+                    //         course = "s";
+                    //         break;
+                    //     case -0:
+                    //         course = "s";
+                    //         break;
+                    //     case 3:
+                    //         course = "w";
+                    //         break;
+                    //     case -1:
+                    //         course = "w";
+                    //         break;
+                    //     case 1:
+                    //         course = "e";
+                    //         break;
+                    //     case -3:
+                    //         course = "e";
+                    //         break;
+                    //     case 2:
+                    //         course = "n";
+                    //         break;
+                    //     case -2:
+                    //         course = "n";
+                    //         break;
+                    // }
+                    
+                    course = "s";
+                    
+                    buttonTimeout+=200;
+                    
+                    break;
+                default: break;
+    
+            }
+            if (verifyStep(course)) {
+                //msg_system('Отправлено своё движение '+course);
+                socket.emit("moving", { name: Me.name, course: course });
+                setTimeout(buttonDownIteration, buttonTimeout);
+            }
+    
+        }
+        
+        function verifyStep(course) {
+            switch (course) { 
+                case "w":
+                    return Maze[Me.X][Me.Y].west;
+                case "n":
+                    return Maze[Me.X][Me.Y].north;
+                case "e":
+                    return Maze[Me.X][Me.Y].east;
+                case "s":
+                    return Maze[Me.X][Me.Y].south;
+            }
+            return false;
+        }
+        
+        
+        
+
+        $scope.messages = [];
+        $scope.roster = [];
+        $scope.name = '';
+        $scope.text = '';
+
+        socket.on('connect', function () {
+          $scope.setName();
+        });
+
+        socket.on('message', function (msg) {
+          $scope.messages.push(msg);
+          $scope.$apply();
+        });
+
+        socket.on('roster', function (names) {
+          $scope.roster = names;
+          $scope.$apply();
+        });
+
+        $scope.send = function send() {
+          console.log('Sending message:', $scope.text);
+          socket.emit('message', $scope.text);
+          $scope.text = '';
+        };
+
+        $scope.setName = function setName() {
+          socket.emit('identify', $scope.name);
+        };
+        
+        ////
+        
+        function connect(n) {
+            isRunning=false;//остановить игру
+            socket.emit('out', {name: name, room: room});//послать серверу сообщение о выходе из комнаты
+            if(n!=null)
+                name = n;
+            else
+                name='Игрок_' + (Math.round(Math.random() * 10000));
+            socket.emit('req_room', name);
+            msg_system('Соединение...');
+        }
+        
+        // socket.on('connecting', function () {
+        //     socket.emit('req_room', name);
+        //     msg_system('Соединение...');
+        // });
+        
+        socket.on('message', function (data) {
+            msg(data.name, data.message);
+            message_txt.focus();
+        });
+        
+        socket.on('room', function (data) {
+            $('#mask, .window').hide(); //закрыть модальное окно, если открыто
+            room = data;
+            msg_system('Вы подключены к комнате «'+ room +'»!');
+        });
+        
+        socket.on('compleate_room', function (data) {
+            maze.empty();//очистить содержимое лабиринта
+            Objects.empty();//удалить игроков и объекты
+            $("#me").remove();//удалить маркер игрока
+            
+            msg_system('Соединение установлено!');
+            
+            $('#chatDiv').append(' <div class="panel">' +
+                    '<span class="nick"></span> <input type="text" name="message_text" id="message_text">' +
+                    '<button type="button" id="message_btn">Отправить</button>' +
+                    '</div>').scrollTop(messages[0].scrollHeight);
+            
+            message_txt = $("#message_text");
+            
+            $("#message_btn").click(function () {
+                var text = $("#message_text").val();
+                if (text.length <= 0)
+                    return;
+                message_txt.val("");
+                socket.emit("message", { message: text, name: name });
+            });
+                
+        });
+        
+        
+        
+        //Получен лабиринт
+        socket.on('maze', function (data) {
+            Maze = data;
+            columns = Maze.length;//ширина лабиринта
+            rows = Maze[0].length;//длина лабиринта
+            msg_system('Лабиринт получен');
+            buildMaze(data);
+        }); /**/
+        
+        //Получены позиции
+        socket.on('positions', function (data) {
+            Positions = data;
+            msg_system('Позиции получены');
+        });
+        
+        //Объекты позиции
+        socket.on('objects', function (data) {
+            ObjectDict = data;
+            msg_system('Объекты получены');
+            
+            axisQuarter=0;
+            isRunning=true;
+            buildObjects(data);
+        });
+        
+        //От сервера пришло движение объекта
+        socket.on('moving', function (data) {
+            if (data.name == Me.name) { //если пришло собственное движение
+                //msg_system('Пришло своё движение x='+ data.dx+' y='+ data.dy);
+                stepMoveMe(data.dx, data.dy);
+            }
+            else {
+                //msg_system('Пришло движение объекта x=' + data.dx + ' y=' + data.dy);
+                var obj = ObjectDict[data.name];
+                stepMoveObject(data.name, obj.X+data.dx, obj.Y+data.dy);//сдвинуть объект 
+                Positions[obj.X+data.dx][obj.Y+data.dy] = Positions[obj.X][obj.Y];
+                Positions[obj.X][obj.Y] = null;
+                obj.X += data.dx;
+                obj.Y += data.dy;
+            }
+        });
+        
+        //Полученны данные спауна
+        socket.on('spawn', function (data) {
+            //msg_system('Данные спауна получены');
+            spawn(data);
+        });
+        
+        
+        //Пришло имя объекта, который надо уничтожить
+        socket.on('destroy', function (data) {
+            $('#'+data).remove();//удалить блок с элементом
+            
+            var obj = ObjectDict[data];
+            
+            if(obj.type=="player")
+                msg_system('Игрок ' + data + ' покинул комнату');
+            
+            Positions[obj.X][obj.Y] = null;//удалить объект из массива позиций
+            ObjectDict.Remove(data);//удалить объект из словаря объектов
+        });
+        
+        //Полученны данные изменения очков
+        socket.on('score', function (data) {
+            if(data.name==name) {
+                Me.scores+=data.ds;
+                changeScores(name);
+            }
+            else
+            {
+                var obj = ObjectDict[data.name];
+                if(obj.type=="player")
+                    obj.scores+=data.ds;
+                Positions[obj.X][obj.Y]=obj;
+            }
+        });
+        
+        
+        // Статистика
+        socket.on('stats', function (arr) {
+            var stats = $('#stats');
+            stats.find('div').not('.turn').remove();
+        
+            var m = '<div class="msg">' +
+                        '<span class="user">' + arr[0] + '.</span> ' 
+                            + arr[1] + '.</span> ' 
+                            + arr[2] + '.</span> ' 
+                            + arr[3] + '.'
+                            + '</div>';
+            stats
+                        .append(m)
+        });
+        
+        
+        
+      }
+    </script>
+  </head>
+  <body>
+      
+      
+      <!-- Модальное окно -->
+    <div id="boxes">  
+        <div id="dialog" class="window">
+            <div class="top"><a href="#" class="link close"/>Закрыть</a></div>
+            <input name="name" id="input-name" placeholder="* Введите ваше имя" class="textbox" required />
+            <input name="submit" id="submit" class="btn btn-form" type="submit" value="Подключиться" onClick=""/>
+        </div>
+    </div>
+    
+    <!-- Маска, затемняющая фон (для модального окна)-->
+    <div id="mask"></div>
+      
+    
+    <div class="mazefield" id="mazefield" ng-controller="GameController">
+
+        <div class="maze" id="maze"></div>
+        <div class="objects" id="objects"></div>
+
+    </div>
+
+    <div class="me-field" id="me-field">
+        
+        
+        
+        <div class="user-widget">
+            <div class="life" id="life"></div>
+            <div class="scores" id="scores"></div>
+            <div class="rating" id="rating"></div>
+        </div>
+
+        <div class="right-panel">
+            <div class="demo">
+                <a class="permalink" href="http://www.itlessons.info/nodejs/simple-chat-with-nodejs-and-socket-io/">← cсылка на статью</a>
+
+                <h1>LabyRuner</h1>
+
+                <button id="reload">Новая игра</button>
+                <div id="stats" class="ui-widget" valign="top"></div>
+                <hr />
+
+                <div id="board" class="ui-widget" valign="top">
+                    <div id="masked" class="ui-widget-shadow ui-corner-all ui-widget-overlay"></div>
+                    <div id="timerpanel">
+                        Время до конца хода:
+                        <span id="timer">15</span> сек.
+                    </div>
+                    <table class="ui-widget ui-corner-all" cellpadding="0" cellspacing="0" align="left" id="board-table"></table>
+                </div>
+
+                <div class="chat">
+                    <div class="messages" id="messages"></div>
+
+                    <div class="panel">
+                        <span class="nick"></span>
+                        <input type="text" name="message_text" id="message_text">
+                        <button type="button" id="message_btn">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    
+    
+    <!-- <div class="container" ng-controller="ChatController">
+      <div class="navbar navbar-fixed-top navbar-inverse">
+        <div class="navbar-inner">
+          <div class="pull-right">
+            <a href="https://c9.io" class="brand">Cloud9 IDE</a>
+          </div>
+        </div>
+      </div>
+      <div class="page-header">
+        <h1>Chat Example</h1>
+      </div>
+      <div class="row">
+        <div class="span3">
+          <ul class="nav nav-list well">
+            <li class="nav-header">Local Users</li>
+            <li ng-repeat="user in roster" ng-bind="user">
+            </li>
+          </ul>
+        </div>
+        <div class="span9">
+          <table class="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th class="span2">Name</th>
+                <th class="span7">Text</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="msg in messages">
+                <td class="span2" ng-bind="msg.name"></td>
+                <td class="span7" ng-bind="msg.text"></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="row controls">
+            <form ng-submit="send()">
+              <div class="span2"><input type="text" class="input-block-level" ng-model="name" ng-change="setName()" placeholder="Your Name"></div>
+              <div class="input-append span7">
+                <input type="text" class="span6" ng-model="text" placeholder="Message">
+                <input type="submit" class="span1 btn btn-primary" value="Send" ng-disabled="!text">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div> -->
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/angular.min.js"></script>
+    <script src="/js/require.js"></script>
+    <script src="/js/jquery.transform.2d.js"></script>
+    <script src="/js/jQueryRotate.js"></script>
+    <script type="text/javascript" src="js/jQueryRotateCompressed.2.2.js"></script>
+    <script src="/js/jquery.transform.js"></script>
+    <script src="/js/jq.matrix.animate.js"> </script>
+  </body>
+</html>

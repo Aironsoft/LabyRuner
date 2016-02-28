@@ -1,0 +1,259 @@
+body {
+    overflow: hidden;/*���� �������� �� ��������������*/
+}
+
+.user-widget {
+    position: static;
+    display: table;
+    width: 25vmax;
+    margin: 2vmin 30px 50px 3vmin;
+}
+
+.life {
+    position: fixed;
+    display: table;
+    background-color: springgreen;
+    opacity: 0.85;
+    padding: 10px;
+    font-family: "PT Sans", Verdana, Arial, sans-serif;
+    font-size: 18px;
+}
+
+.scores {
+    position: fixed;
+    display: table;
+    background-color: #cccc00;
+    opacity: 0.85;
+    padding: 10px;
+    margin-top: 7%;
+    font-family: "PT Sans", Verdana, Arial, sans-serif;
+    font-size: 18px;
+}
+
+.rating {
+    position: fixed;
+    display: table;
+    margin-top: 20%;
+    opacity: 0.85;
+    font-size: 16px;
+}
+
+.right-panel {
+    position: static;
+    display: table;
+    width: 25vmax;
+    margin: 10px 30px 50px auto;
+}
+
+.demo {
+    position: fixed;
+    display: table;
+    background-color: springgreen;
+    opacity: 0.85;
+    padding: 10px;
+    font-family: "PT Sans", Verdana, Arial, sans-serif;
+    font-size: 13px;
+}
+
+.chat .messages{
+    height: 100px;
+    border: 1px solid #d4d4d4;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 5px;
+}
+
+.chat .messages .user{
+    color: #B22222;
+}
+
+.chat .message{
+    width: 70%;
+}
+
+.chat .panel{
+    margin-top: 8px;
+}
+
+#message_text{
+    width: 60%;
+    display: inline-block;
+    margin-left: 8px;
+}
+
+
+#masked, #timerpanel {
+    vertical-align: middle;
+    display: none;
+}
+#timer {
+    font-weight: bold;
+    color: red;
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+#board-table td {
+    height: 100px;
+    width: 100px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 42pt;
+    font-weight: bold;
+    font-family: Arial;
+    cursor: pointer;
+}
+
+#stats {
+    width: 320px;
+}
+#stats > div {
+    width: 300px;
+    padding: 3px;
+    margin: 1px;
+}
+
+
+
+
+
+.row .maze {
+  /*padding: 0 0 20px 20px;*/
+  display: inline-block;
+}
+
+.row
+{
+    display: inline-block;
+    /*border: 4px solid black;*/
+}
+
+.in {
+    background: #fff;
+}
+
+.cursor {
+    background: yellow;
+}
+
+.player {
+    background: red;
+}
+
+.enemy {
+    background: green;
+}
+
+.cell
+{
+    border: 4px solid black;
+    width: 8vmin;
+    min-width: 40px;
+    height: 8vmin;
+    min-height: 40px;
+}
+
+.n
+{
+    border-top: none;
+    padding-top: 4px;
+}
+.w
+{
+    border-left: none;
+    padding-left: 4px;
+}
+
+.s
+{
+    border-bottom: none;
+    padding-bottom: 4px;
+}
+
+.e
+{
+    border-right: none;
+    padding-right: 4px;
+}
+
+.maze
+{
+	display: flex;
+    width: auto;
+    height: auto;
+	/*background-color: #aaa;*/
+}
+
+
+/*body:hover .me-field {*/
+/*    transform: rotate(360deg);*/
+/*    -webkit-transform: rotate(360deg);*/
+/*    -o-transform: rotate(360deg);*/
+/*    -moz-transform: rotate(360deg);*/
+/*}*/
+
+
+.mazefield
+{
+    /*width: 100%;*/
+    /*height: 100%;*/
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.me-field
+{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.me
+{
+    position: absolute;
+    top: 50%;
+    left: 45%;
+}
+
+.object
+{
+    position: absolute;
+}
+
+.ball {
+        margin-top: 2px;
+        margin-left: 2px;
+        width: 8vmin;
+        min-width: 40px;
+        height: 8vmin;
+        min-height: 40px;
+        background: #e3e3e3;
+        border: 2px solid #939393;
+        line-height: 8vmin;
+        text-align: center;
+        border-radius: 50%;
+        /*-moz-border-radius:4vmin;
+        -webkit-border-radius:4vmin;
+        -khtml-border-radius:4vmin;*/
+}
+
+.rune {
+        margin-top: 2px;
+        margin-left: 2px;
+        width: 8vmin;
+        min-width: 40px;
+        height: 8vmin;
+        min-height: 40px;
+        background: #e3e3e3;
+        border: 2px solid #939393;
+        line-height: 8vmin;
+        font-size: 160%;
+        text-align: center;
+        border-radius: 50%;
+        -moz-border-radius:50%;
+        -webkit-border-radius:50%;
+        -khtml-border-radius:50%;
+}{"changed":true,"filter":false,"title":"main.css","tooltip":"/client/main.css","value":"body {\n    overflow: hidden;/*���� �������� �� ��������������*/\n}\n\n.user-widget {\n    position: static;\n    display: table;\n    width: 25vmax;\n    margin: 2vmin 30px 50px 3vmin;\n}\n\n.life {\n    position: fixed;\n    display: table;\n    background-color: springgreen;\n    opacity: 0.85;\n    padding: 10px;\n    font-family: \"PT Sans\", Verdana, Arial, sans-serif;\n    font-size: 18px;\n}\n\n.scores {\n    position: fixed;\n    display: table;\n    background-color: #cccc00;\n    opacity: 0.85;\n    padding: 10px;\n    margin-top: 7%;\n    font-family: \"PT Sans\", Verdana, Arial, sans-serif;\n    font-size: 18px;\n}\n\n\n.right-panel {\n    position: static;\n    display: table;\n    width: 25vmax;\n    margin: 10px 30px 50px auto;\n}\n\n.demo {\n    position: fixed;\n    display: table;\n    background-color: springgreen;\n    opacity: 0.85;\n    padding: 10px;\n    font-family: \"PT Sans\", Verdana, Arial, sans-serif;\n    font-size: 13px;\n}\n\n.chat .messages{\n    height: 100px;\n    border: 1px solid #d4d4d4;\n    overflow-y: scroll;\n    overflow-x: hidden;\n    padding: 5px;\n}\n\n.chat .messages .user{\n    color: #B22222;\n}\n\n.chat .message{\n    width: 70%;\n}\n\n.chat .panel{\n    margin-top: 8px;\n}\n\n#message_text{\n    width: 60%;\n    display: inline-block;\n    margin-left: 8px;\n}\n\n\n#masked, #timerpanel {\n    vertical-align: middle;\n    display: none;\n}\n#timer {\n    font-weight: bold;\n    color: red;\n    font-size: 16px;\n    vertical-align: middle;\n}\n\n#board-table td {\n    height: 100px;\n    width: 100px;\n    text-align: center;\n    vertical-align: middle;\n    font-size: 42pt;\n    font-weight: bold;\n    font-family: Arial;\n    cursor: pointer;\n}\n\n#stats {\n    width: 320px;\n}\n#stats > div {\n    width: 300px;\n    padding: 3px;\n    margin: 1px;\n}\n\n\n\n\n\n.row .maze {\n  /*padding: 0 0 20px 20px;*/\n  display: inline-block;\n}\n\n.row\n{\n    display: inline-block;\n    /*border: 4px solid black;*/\n}\n\n.in {\n    background: #fff;\n}\n\n.cursor {\n    background: yellow;\n}\n\n.player {\n    background: red;\n}\n\n.enemy {\n    background: green;\n}\n\n.cell\n{\n    border: 4px solid black;\n    width: 8vmin;\n    min-width: 40px;\n    height: 8vmin;\n    min-height: 40px;\n}\n\n.n\n{\n    border-top: none;\n    padding-top: 4px;\n}\n.w\n{\n    border-left: none;\n    padding-left: 4px;\n}\n\n.s\n{\n    border-bottom: none;\n    padding-bottom: 4px;\n}\n\n.e\n{\n    border-right: none;\n    padding-right: 4px;\n}\n\n.maze\n{\n\tdisplay: flex;\n    width: auto;\n    height: auto;\n\t/*background-color: #aaa;*/\n}\n\n\n/*body:hover .me-field {*/\n/*    transform: rotate(360deg);*/\n/*    -webkit-transform: rotate(360deg);*/\n/*    -o-transform: rotate(360deg);*/\n/*    -moz-transform: rotate(360deg);*/\n/*}*/\n\n\n.mazefield\n{\n    /*width: 100%;*/\n    /*height: 100%;*/\n    position: absolute;\n    top: 0;\n    left: 0;\n}\n\n.me-field\n{\n    width: 100%;\n    height: 100%;\n    position: absolute;\n    top: 0;\n    left: 0;\n}\n\n.me\n{\n    position: absolute;\n    top: 50%;\n    left: 45%;\n}\n\n.object\n{\n    position: absolute;\n}\n\n.ball {\n        margin-top: 2px;\n        margin-left: 2px;\n        width: 8vmin;\n        min-width: 40px;\n        height: 8vmin;\n        min-height: 40px;\n        background: #e3e3e3;\n        border: 2px solid #939393;\n        line-height: 8vmin;\n        text-align: center;\n        border-radius: 50%;\n        /*-moz-border-radius:4vmin;\n        -webkit-border-radius:4vmin;\n        -khtml-border-radius:4vmin;*/\n}\n\n.rune {\n        margin-top: 2px;\n        margin-left: 2px;\n        width: 8vmin;\n        min-width: 40px;\n        height: 8vmin;\n        min-height: 40px;\n        background: #e3e3e3;\n        border: 2px solid #939393;\n        line-height: 8vmin;\n        text-align: center;\n        border-radius: 50%;\n        -moz-border-radius:50%;\n        -webkit-border-radius:50%;\n        -khtml-border-radius:50%;\n}{\"filter\":false,\"title\":\"main.css\",\"tooltip\":\"/client/main.css\",\"undoManager\":{\"mark\":100,\"position\":100,\"stack\":[[{\"start\":{\"row\":186,\"column\":21},\"end\":{\"row\":186,\"column\":22},\"action\":\"remove\",\"lines\":[\"8\"],\"id\":27},{\"start\":{\"row\":186,\"column\":21},\"end\":{\"row\":186,\"column\":22},\"action\":\"insert\",\"lines\":[\"4\"]}],[{\"start\":{\"row\":113,\"column\":11},\"end\":{\"row\":113,\"column\":12},\"action\":\"remove\",\"lines\":[\"8\"],\"id\":28},{\"start\":{\"row\":113,\"column\":11},\"end\":{\"row\":113,\"column\":12},\"action\":\"insert\",\"lines\":[\"4\"]}],[{\"start\":{\"row\":114,\"column\":12},\"end\":{\"row\":114,\"column\":13},\"action\":\"remove\",\"lines\":[\"8\"],\"id\":29},{\"start\":{\"row\":114,\"column\":12},\"end\":{\"row\":114,\"column\":13},\"action\":\"insert\",\"lines\":[\"4\"]}],[{\"start\":{\"row\":159,\"column\":16},\"end\":{\"row\":159,\"column\":18},\"action\":\"insert\",\"lines\":[\"*/\"],\"id\":30},{\"start\":{\"row\":159,\"column\":4},\"end\":{\"row\":159,\"column\":6},\"action\":\"insert\",\"lines\":[\"/*\"]},{\"start\":{\"row\":160,\"column\":17},\"end\":{\"row\":160,\"column\":19},\"action\":\"insert\",\"lines\":[\"*/\"]},{\"start\":{\"row\":160,\"column\":4},\"end\":{\"row\":160,\"column\":6},\"action\":\"insert\",\"lines\":[\"/*\"]}],[{\"start\":{\"row\":156,\"column\":0},\"end\":{\"row\":157,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":31}],[{\"start\":{\"row\":157,\"column\":0},\"end\":{\"row\":158,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":32}],[{\"start\":{\"row\":157,\"column\":0},\"end\":{\"row\":157,\"column\":9},\"action\":\"insert\",\"lines\":[\"mazefield\"],\"id\":33}],[{\"start\":{\"row\":157,\"column\":0},\"end\":{\"row\":157,\"column\":1},\"action\":\"insert\",\"lines\":[\".\"],\"id\":34}],[{\"start\":{\"row\":157,\"column\":10},\"end\":{\"row\":158,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":35}],[{\"start\":{\"row\":158,\"column\":0},\"end\":{\"row\":164,\"column\":1},\"action\":\"insert\",\"lines\":[\"{\",\"    /*width: 100%;*/\",\"    /*height: 100%;*/\",\"    position: absolute;\",\"    top: 0;\",\"    left: 0;\",\"}\"],\"id\":36}],[{\"start\":{\"row\":159,\"column\":18},\"end\":{\"row\":159,\"column\":20},\"action\":\"remove\",\"lines\":[\"*/\"],\"id\":37},{\"start\":{\"row\":159,\"column\":4},\"end\":{\"row\":159,\"column\":6},\"action\":\"remove\",\"lines\":[\"/*\"]},{\"start\":{\"row\":160,\"column\":19},\"end\":{\"row\":160,\"column\":21},\"action\":\"remove\",\"lines\":[\"*/\"]},{\"start\":{\"row\":160,\"column\":4},\"end\":{\"row\":160,\"column\":6},\"action\":\"remove\",\"lines\":[\"/*\"]}],[{\"start\":{\"row\":159,\"column\":16},\"end\":{\"row\":159,\"column\":18},\"action\":\"insert\",\"lines\":[\"*/\"],\"id\":38},{\"start\":{\"row\":159,\"column\":4},\"end\":{\"row\":159,\"column\":6},\"action\":\"insert\",\"lines\":[\"/*\"]},{\"start\":{\"row\":160,\"column\":17},\"end\":{\"row\":160,\"column\":19},\"action\":\"insert\",\"lines\":[\"*/\"]},{\"start\":{\"row\":160,\"column\":4},\"end\":{\"row\":160,\"column\":6},\"action\":\"insert\",\"lines\":[\"/*\"]}],[{\"start\":{\"row\":168,\"column\":18},\"end\":{\"row\":168,\"column\":20},\"action\":\"remove\",\"lines\":[\"*/\"],\"id\":39},{\"start\":{\"row\":168,\"column\":4},\"end\":{\"row\":168,\"column\":6},\"action\":\"remove\",\"lines\":[\"/*\"]},{\"start\":{\"row\":169,\"column\":19},\"end\":{\"row\":169,\"column\":21},\"action\":\"remove\",\"lines\":[\"*/\"]},{\"start\":{\"row\":169,\"column\":4},\"end\":{\"row\":169,\"column\":6},\"action\":\"remove\",\"lines\":[\"/*\"]}],[{\"start\":{\"row\":113,\"column\":11},\"end\":{\"row\":113,\"column\":12},\"action\":\"remove\",\"lines\":[\"4\"],\"id\":40},{\"start\":{\"row\":113,\"column\":11},\"end\":{\"row\":113,\"column\":12},\"action\":\"insert\",\"lines\":[\"8\"]}],[{\"start\":{\"row\":114,\"column\":12},\"end\":{\"row\":114,\"column\":13},\"action\":\"remove\",\"lines\":[\"4\"],\"id\":41},{\"start\":{\"row\":114,\"column\":12},\"end\":{\"row\":114,\"column\":13},\"action\":\"insert\",\"lines\":[\"8\"]}],[{\"start\":{\"row\":190,\"column\":15},\"end\":{\"row\":190,\"column\":16},\"action\":\"remove\",\"lines\":[\"4\"],\"id\":42},{\"start\":{\"row\":190,\"column\":15},\"end\":{\"row\":190,\"column\":16},\"action\":\"insert\",\"lines\":[\"8\"]}],[{\"start\":{\"row\":191,\"column\":16},\"end\":{\"row\":191,\"column\":17},\"action\":\"remove\",\"lines\":[\"4\"],\"id\":43},{\"start\":{\"row\":191,\"column\":16},\"end\":{\"row\":191,\"column\":17},\"action\":\"insert\",\"lines\":[\"8\"]}],[{\"start\":{\"row\":193,\"column\":34},\"end\":{\"row\":194,\"column\":29},\"action\":\"remove\",\"lines\":[\"\",\"        border-radius: 4vmin;\"],\"id\":44}],[{\"start\":{\"row\":195,\"column\":27},\"end\":{\"row\":196,\"column\":29},\"action\":\"insert\",\"lines\":[\"\",\"        border-radius: 4vmin;\"],\"id\":45}],[{\"start\":{\"row\":194,\"column\":21},\"end\":{\"row\":194,\"column\":22},\"action\":\"remove\",\"lines\":[\"4\"],\"id\":47},{\"start\":{\"row\":194,\"column\":21},\"end\":{\"row\":194,\"column\":22},\"action\":\"insert\",\"lines\":[\"8\"]}],[{\"start\":{\"row\":2,\"column\":1},\"end\":{\"row\":3,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":48}],[{\"start\":{\"row\":3,\"column\":0},\"end\":{\"row\":4,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":49}],[{\"start\":{\"row\":4,\"column\":0},\"end\":{\"row\":4,\"column\":1},\"action\":\"insert\",\"lines\":[\".\"],\"id\":50}],[{\"start\":{\"row\":4,\"column\":1},\"end\":{\"row\":4,\"column\":12},\"action\":\"insert\",\"lines\":[\"user-widget\"],\"id\":51}],[{\"start\":{\"row\":4,\"column\":12},\"end\":{\"row\":4,\"column\":13},\"action\":\"insert\",\"lines\":[\" \"],\"id\":52}],[{\"start\":{\"row\":4,\"column\":13},\"end\":{\"row\":4,\"column\":14},\"action\":\"insert\",\"lines\":[\"{\"],\"id\":53}],[{\"start\":{\"row\":4,\"column\":14},\"end\":{\"row\":6,\"column\":1},\"action\":\"insert\",\"lines\":[\"\",\"    \",\"}\"],\"id\":54}],[{\"start\":{\"row\":5,\"column\":4},\"end\":{\"row\":8,\"column\":32},\"action\":\"insert\",\"lines\":[\"position: static;\",\"    display: table;\",\"    width: 25vmax;\",\"    margin: 10px 30px 50px auto;\"],\"id\":55}],[{\"start\":{\"row\":8,\"column\":27},\"end\":{\"row\":8,\"column\":31},\"action\":\"remove\",\"lines\":[\"auto\"],\"id\":56},{\"start\":{\"row\":8,\"column\":27},\"end\":{\"row\":8,\"column\":28},\"action\":\"insert\",\"lines\":[\"0\"]}],[{\"start\":{\"row\":8,\"column\":28},\"end\":{\"row\":8,\"column\":29},\"action\":\"insert\",\"lines\":[\"p\"],\"id\":57}],[{\"start\":{\"row\":8,\"column\":29},\"end\":{\"row\":8,\"column\":30},\"action\":\"insert\",\"lines\":[\"x\"],\"id\":58}],[{\"start\":{\"row\":9,\"column\":1},\"end\":{\"row\":10,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":59}],[{\"start\":{\"row\":10,\"column\":0},\"end\":{\"row\":11,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":60}],[{\"start\":{\"row\":11,\"column\":0},\"end\":{\"row\":12,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":61}],[{\"start\":{\"row\":11,\"column\":0},\"end\":{\"row\":19,\"column\":1},\"action\":\"insert\",\"lines\":[\".demo {\",\"    position: fixed;\",\"    display: table;\",\"    background-color: springgreen;\",\"    opacity: 0.85;\",\"    padding: 10px;\",\"    font-family: \\\"PT Sans\\\", Verdana, Arial, sans-serif;\",\"    font-size: 13px;\",\"}\"],\"id\":62}],[{\"start\":{\"row\":11,\"column\":1},\"end\":{\"row\":11,\"column\":5},\"action\":\"remove\",\"lines\":[\"demo\"],\"id\":63},{\"start\":{\"row\":11,\"column\":1},\"end\":{\"row\":11,\"column\":2},\"action\":\"insert\",\"lines\":[\"l\"]}],[{\"start\":{\"row\":11,\"column\":2},\"end\":{\"row\":11,\"column\":3},\"action\":\"insert\",\"lines\":[\"i\"],\"id\":64}],[{\"start\":{\"row\":11,\"column\":3},\"end\":{\"row\":11,\"column\":4},\"action\":\"insert\",\"lines\":[\"f\"],\"id\":65}],[{\"start\":{\"row\":11,\"column\":4},\"end\":{\"row\":11,\"column\":5},\"action\":\"insert\",\"lines\":[\"e\"],\"id\":66}],[{\"start\":{\"row\":18,\"column\":16},\"end\":{\"row\":18,\"column\":17},\"action\":\"remove\",\"lines\":[\"3\"],\"id\":67},{\"start\":{\"row\":18,\"column\":16},\"end\":{\"row\":18,\"column\":17},\"action\":\"insert\",\"lines\":[\"8\"]}],[{\"start\":{\"row\":8,\"column\":31},\"end\":{\"row\":9,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":69},{\"start\":{\"row\":9,\"column\":0},\"end\":{\"row\":9,\"column\":4},\"action\":\"insert\",\"lines\":[\"    \"]}],[{\"start\":{\"row\":9,\"column\":4},\"end\":{\"row\":9,\"column\":34},\"action\":\"insert\",\"lines\":[\"margin: 2vmin 30px 50px 3vmin;\"],\"id\":70}],[{\"start\":{\"row\":7,\"column\":18},\"end\":{\"row\":8,\"column\":31},\"action\":\"remove\",\"lines\":[\"\",\"    margin: 10px 30px 50px 0px;\"],\"id\":71}],[{\"start\":{\"row\":218,\"column\":1},\"end\":{\"row\":219,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":72}],[{\"start\":{\"row\":219,\"column\":0},\"end\":{\"row\":220,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":73}],[{\"start\":{\"row\":220,\"column\":0},\"end\":{\"row\":233,\"column\":1},\"action\":\"insert\",\"lines\":[\".ball {\",\"        margin-top: 2px;\",\"        margin-left: 2px;\",\"        width: 8vmin;\",\"        height: 8vmin;\",\"        background: #e3e3e3;\",\"        border: 2px solid #939393;\",\"        line-height: 8vmin;\",\"        text-align: center;\",\"        border-radius: 4vmin;\",\"        /*-moz-border-radius:4vmin;\",\"        -webkit-border-radius:4vmin;\",\"        -khtml-border-radius:4vmin;*/\",\"}\"],\"id\":74}],[{\"start\":{\"row\":220,\"column\":1},\"end\":{\"row\":220,\"column\":5},\"action\":\"remove\",\"lines\":[\"ball\"],\"id\":75},{\"start\":{\"row\":220,\"column\":1},\"end\":{\"row\":220,\"column\":2},\"action\":\"insert\",\"lines\":[\"r\"]}],[{\"start\":{\"row\":220,\"column\":2},\"end\":{\"row\":220,\"column\":3},\"action\":\"insert\",\"lines\":[\"u\"],\"id\":76}],[{\"start\":{\"row\":220,\"column\":3},\"end\":{\"row\":220,\"column\":4},\"action\":\"insert\",\"lines\":[\"n\"],\"id\":77}],[{\"start\":{\"row\":220,\"column\":4},\"end\":{\"row\":220,\"column\":5},\"action\":\"insert\",\"lines\":[\"e\"],\"id\":78}],[{\"start\":{\"row\":230,\"column\":8},\"end\":{\"row\":230,\"column\":10},\"action\":\"remove\",\"lines\":[\"/*\"],\"id\":79},{\"start\":{\"row\":232,\"column\":35},\"end\":{\"row\":232,\"column\":37},\"action\":\"remove\",\"lines\":[\"*/\"]}],[{\"start\":{\"row\":19,\"column\":1},\"end\":{\"row\":20,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":80}],[{\"start\":{\"row\":20,\"column\":0},\"end\":{\"row\":21,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":81}],[{\"start\":{\"row\":21,\"column\":0},\"end\":{\"row\":29,\"column\":1},\"action\":\"insert\",\"lines\":[\".life {\",\"    position: fixed;\",\"    display: table;\",\"    background-color: springgreen;\",\"    opacity: 0.85;\",\"    padding: 10px;\",\"    font-family: \\\"PT Sans\\\", Verdana, Arial, sans-serif;\",\"    font-size: 18px;\",\"}\"],\"id\":82}],[{\"start\":{\"row\":21,\"column\":1},\"end\":{\"row\":21,\"column\":5},\"action\":\"remove\",\"lines\":[\"life\"],\"id\":83},{\"start\":{\"row\":21,\"column\":1},\"end\":{\"row\":21,\"column\":2},\"action\":\"insert\",\"lines\":[\"s\"]}],[{\"start\":{\"row\":21,\"column\":2},\"end\":{\"row\":21,\"column\":3},\"action\":\"insert\",\"lines\":[\"c\"],\"id\":84}],[{\"start\":{\"row\":21,\"column\":3},\"end\":{\"row\":21,\"column\":4},\"action\":\"insert\",\"lines\":[\"o\"],\"id\":85}],[{\"start\":{\"row\":21,\"column\":4},\"end\":{\"row\":21,\"column\":5},\"action\":\"insert\",\"lines\":[\"r\"],\"id\":86}],[{\"start\":{\"row\":21,\"column\":5},\"end\":{\"row\":21,\"column\":6},\"action\":\"insert\",\"lines\":[\"e\"],\"id\":87}],[{\"start\":{\"row\":21,\"column\":6},\"end\":{\"row\":21,\"column\":7},\"action\":\"insert\",\"lines\":[\"s\"],\"id\":88}],[{\"start\":{\"row\":24,\"column\":22},\"end\":{\"row\":24,\"column\":33},\"action\":\"remove\",\"lines\":[\"springgreen\"],\"id\":89},{\"start\":{\"row\":24,\"column\":22},\"end\":{\"row\":24,\"column\":23},\"action\":\"insert\",\"lines\":[\"#\"]}],[{\"start\":{\"row\":24,\"column\":23},\"end\":{\"row\":24,\"column\":24},\"action\":\"insert\",\"lines\":[\"c\"],\"id\":90}],[{\"start\":{\"row\":24,\"column\":24},\"end\":{\"row\":24,\"column\":25},\"action\":\"insert\",\"lines\":[\"c\"],\"id\":91}],[{\"start\":{\"row\":24,\"column\":25},\"end\":{\"row\":24,\"column\":26},\"action\":\"insert\",\"lines\":[\"c\"],\"id\":92}],[{\"start\":{\"row\":24,\"column\":26},\"end\":{\"row\":24,\"column\":27},\"action\":\"insert\",\"lines\":[\"c\"],\"id\":93}],[{\"start\":{\"row\":24,\"column\":27},\"end\":{\"row\":24,\"column\":28},\"action\":\"insert\",\"lines\":[\"-\"],\"id\":94}],[{\"start\":{\"row\":24,\"column\":27},\"end\":{\"row\":24,\"column\":28},\"action\":\"remove\",\"lines\":[\"-\"],\"id\":95}],[{\"start\":{\"row\":24,\"column\":27},\"end\":{\"row\":24,\"column\":28},\"action\":\"insert\",\"lines\":[\"0\"],\"id\":96}],[{\"start\":{\"row\":24,\"column\":28},\"end\":{\"row\":24,\"column\":29},\"action\":\"insert\",\"lines\":[\"0\"],\"id\":97}],[{\"start\":{\"row\":26,\"column\":18},\"end\":{\"row\":27,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":98},{\"start\":{\"row\":27,\"column\":0},\"end\":{\"row\":27,\"column\":4},\"action\":\"insert\",\"lines\":[\"    \"]}],[{\"start\":{\"row\":27,\"column\":4},\"end\":{\"row\":27,\"column\":26},\"action\":\"insert\",\"lines\":[\"    margin-top: 7vmin;\"],\"id\":99}],[{\"start\":{\"row\":27,\"column\":4},\"end\":{\"row\":27,\"column\":7},\"action\":\"remove\",\"lines\":[\"   \"],\"id\":100}],[{\"start\":{\"row\":27,\"column\":4},\"end\":{\"row\":27,\"column\":5},\"action\":\"remove\",\"lines\":[\" \"],\"id\":101}],[{\"start\":{\"row\":240,\"column\":23},\"end\":{\"row\":240,\"column\":28},\"action\":\"remove\",\"lines\":[\"4vmin\"],\"id\":102},{\"start\":{\"row\":240,\"column\":23},\"end\":{\"row\":240,\"column\":24},\"action\":\"insert\",\"lines\":[\"5\"]}],[{\"start\":{\"row\":240,\"column\":24},\"end\":{\"row\":240,\"column\":25},\"action\":\"insert\",\"lines\":[\"0\"],\"id\":103}],[{\"start\":{\"row\":240,\"column\":25},\"end\":{\"row\":240,\"column\":26},\"action\":\"insert\",\"lines\":[\"%\"],\"id\":104}],[{\"start\":{\"row\":225,\"column\":23},\"end\":{\"row\":225,\"column\":28},\"action\":\"remove\",\"lines\":[\"4vmin\"],\"id\":105},{\"start\":{\"row\":225,\"column\":23},\"end\":{\"row\":225,\"column\":26},\"action\":\"insert\",\"lines\":[\"50%\"]}],[{\"start\":{\"row\":241,\"column\":27},\"end\":{\"row\":241,\"column\":32},\"action\":\"remove\",\"lines\":[\"4vmin\"],\"id\":106},{\"start\":{\"row\":241,\"column\":27},\"end\":{\"row\":241,\"column\":30},\"action\":\"insert\",\"lines\":[\"50%\"]}],[{\"start\":{\"row\":242,\"column\":30},\"end\":{\"row\":242,\"column\":35},\"action\":\"remove\",\"lines\":[\"4vmin\"],\"id\":107},{\"start\":{\"row\":242,\"column\":30},\"end\":{\"row\":242,\"column\":33},\"action\":\"insert\",\"lines\":[\"50%\"]}],[{\"start\":{\"row\":243,\"column\":29},\"end\":{\"row\":243,\"column\":34},\"action\":\"remove\",\"lines\":[\"4vmin\"],\"id\":108},{\"start\":{\"row\":243,\"column\":29},\"end\":{\"row\":243,\"column\":32},\"action\":\"insert\",\"lines\":[\"50%\"]}],[{\"start\":{\"row\":234,\"column\":21},\"end\":{\"row\":235,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":109},{\"start\":{\"row\":235,\"column\":0},\"end\":{\"row\":235,\"column\":8},\"action\":\"insert\",\"lines\":[\"        \"]}],[{\"start\":{\"row\":235,\"column\":8},\"end\":{\"row\":235,\"column\":9},\"action\":\"insert\",\"lines\":[\"m\"],\"id\":110}],[{\"start\":{\"row\":235,\"column\":9},\"end\":{\"row\":235,\"column\":10},\"action\":\"insert\",\"lines\":[\"i\"],\"id\":111}],[{\"start\":{\"row\":235,\"column\":10},\"end\":{\"row\":235,\"column\":11},\"action\":\"insert\",\"lines\":[\"n\"],\"id\":112}],[{\"start\":{\"row\":235,\"column\":8},\"end\":{\"row\":235,\"column\":11},\"action\":\"remove\",\"lines\":[\"min\"],\"id\":113},{\"start\":{\"row\":235,\"column\":8},\"end\":{\"row\":235,\"column\":17},\"action\":\"insert\",\"lines\":[\"min-width\"]}],[{\"start\":{\"row\":235,\"column\":17},\"end\":{\"row\":235,\"column\":19},\"action\":\"insert\",\"lines\":[\":;\"],\"id\":114}],[{\"start\":{\"row\":235,\"column\":18},\"end\":{\"row\":235,\"column\":19},\"action\":\"insert\",\"lines\":[\" \"],\"id\":115}],[{\"start\":{\"row\":235,\"column\":19},\"end\":{\"row\":235,\"column\":20},\"action\":\"insert\",\"lines\":[\"4\"],\"id\":116}],[{\"start\":{\"row\":235,\"column\":20},\"end\":{\"row\":235,\"column\":21},\"action\":\"insert\",\"lines\":[\"0\"],\"id\":117}],[{\"start\":{\"row\":235,\"column\":21},\"end\":{\"row\":235,\"column\":22},\"action\":\"insert\",\"lines\":[\"p\"],\"id\":118}],[{\"start\":{\"row\":235,\"column\":22},\"end\":{\"row\":235,\"column\":23},\"action\":\"insert\",\"lines\":[\"x\"],\"id\":119}],[{\"start\":{\"row\":236,\"column\":22},\"end\":{\"row\":237,\"column\":24},\"action\":\"insert\",\"lines\":[\"\",\"        min-width: 40px;\"],\"id\":120}],[{\"start\":{\"row\":237,\"column\":12},\"end\":{\"row\":237,\"column\":17},\"action\":\"remove\",\"lines\":[\"width\"],\"id\":121},{\"start\":{\"row\":237,\"column\":12},\"end\":{\"row\":237,\"column\":18},\"action\":\"insert\",\"lines\":[\"height\"]}],[{\"start\":{\"row\":219,\"column\":21},\"end\":{\"row\":220,\"column\":24},\"action\":\"insert\",\"lines\":[\"\",\"        min-width: 40px;\"],\"id\":122}],[{\"start\":{\"row\":221,\"column\":22},\"end\":{\"row\":222,\"column\":25},\"action\":\"insert\",\"lines\":[\"\",\"        min-height: 40px;\"],\"id\":123}],[{\"start\":{\"row\":142,\"column\":17},\"end\":{\"row\":143,\"column\":0},\"action\":\"insert\",\"lines\":[\"\",\"\"],\"id\":124},{\"start\":{\"row\":143,\"column\":0},\"end\":{\"row\":143,\"column\":4},\"action\":\"insert\",\"lines\":[\"    \"]}],[{\"start\":{\"row\":144,\"column\":18},\"end\":{\"row\":145,\"column\":25},\"action\":\"insert\",\"lines\":[\"\",\"        min-height: 40px;\"],\"id\":127}],[{\"start\":{\"row\":145,\"column\":4},\"end\":{\"row\":145,\"column\":8},\"action\":\"remove\",\"lines\":[\"    \"],\"id\":128}],[{\"start\":{\"row\":142,\"column\":17},\"end\":{\"row\":143,\"column\":4},\"action\":\"remove\",\"lines\":[\"\",\"    \"],\"id\":129},{\"start\":{\"row\":142,\"column\":17},\"end\":{\"row\":143,\"column\":21},\"action\":\"insert\",\"lines\":[\"\",\"    min-height: 40px;\"]}],[{\"start\":{\"row\":143,\"column\":8},\"end\":{\"row\":143,\"column\":13},\"action\":\"remove\",\"lines\":[\"heigh\"],\"id\":130},{\"start\":{\"row\":143,\"column\":8},\"end\":{\"row\":143,\"column\":13},\"action\":\"insert\",\"lines\":[\"width\"]}],[{\"start\":{\"row\":143,\"column\":13},\"end\":{\"row\":143,\"column\":14},\"action\":\"remove\",\"lines\":[\"t\"],\"id\":131}]]},\"ace\":{\"folds\":[],\"scrolltop\":3120,\"scrollleft\":0,\"selection\":{\"start\":{\"row\":147,\"column\":0},\"end\":{\"row\":147,\"column\":0},\"isBackwards\":false},\"options\":{\"guessTabSize\":true,\"useWrapMode\":false,\"wrapToView\":true},\"firstLineState\":0},\"timestamp\":1456539399721,\"hash\":\"cacdebc91d84849216a2ec7ebd972ba26cfebac6\"}","undoManager":{"mark":-2,"position":4,"stack":[[{"start":{"row":27,"column":20},"end":{"row":27,"column":21},"action":"remove","lines":["n"],"id":2}],[{"start":{"row":27,"column":19},"end":{"row":27,"column":20},"action":"remove","lines":["i"],"id":3}],[{"start":{"row":27,"column":18},"end":{"row":27,"column":19},"action":"remove","lines":["m"],"id":4}],[{"start":{"row":27,"column":17},"end":{"row":27,"column":18},"action":"remove","lines":["v"],"id":5}],[{"start":{"row":27,"column":17},"end":{"row":27,"column":18},"action":"insert","lines":["%"],"id":6}]]},"ace":{"folds":[],"scrolltop":0,"scrollleft":0,"selection":{"start":{"row":27,"column":18},"end":{"row":27,"column":18},"isBackwards":false},"options":{"guessTabSize":true,"useWrapMode":false,"wrapToView":true},"firstLineState":0},"timestamp":1456539400000}

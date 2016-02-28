@@ -1,0 +1,2 @@
+c:\users\airon\documents\visual studio 2015\Projects\LabyRuner\LabyRuner\obj\Debug\LabyRuner.njsprojResolveAssemblyReference.cache
+c:\users\airon\documents\visual studio 2015\Projects\LabyRuner\LabyRuner\bin\Microsoft.NodejsTools.WebRole.dll
