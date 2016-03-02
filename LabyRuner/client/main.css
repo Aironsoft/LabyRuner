@@ -235,7 +235,7 @@ body {
         min-height: 40px;
         background: #e3e3e3;
         border: 2px solid #939393;
-        line-height: 8vmin;
+        /*line-height: 8vmin;*/
         text-align: center;
         border-radius: 50%;
         /*-moz-border-radius:4vmin;

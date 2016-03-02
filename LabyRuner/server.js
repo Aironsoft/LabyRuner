@@ -276,7 +276,7 @@ io.on('connection', function (socket) {
         var room=null;//комната игрока
         
         //Game.start();
-        if (Game.incompleateRoom == null)  //* if (Game.incompleateRoom ==- null)
+        if (Game.incompleateRoom == null)  //если нет комнаты с недобором
         {
             var keys=Object.keys(Game.unfullRooms); //массив ключей словаря незаполненных комнат
             var unfullRoomsCount=keys.length;//количество незаполненных комнат
@@ -428,7 +428,8 @@ io.on('connection', function (socket) {
                 if(forwardObj.type=="rune") //если это руна мешает проходу
                 {
                     io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, dx: dx, dy: dy }); //имя и вектор сдвига игрока
-        
+                    
+                    delete Game.rooms[socket.id].ObjectDict[forwardObj.name];//удалить уничтожаемый объект из словаря объектов
                     io.sockets.in(Game.rooms[socket.id].name).emit('destroy', forwardObj.name); //указать игрокам имя объекта для уничтожения
         
                     io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: data.name, ds: 10 }); //на сколько изменилось количество очков игрока
@@ -444,6 +445,7 @@ io.on('connection', function (socket) {
                 }
                 else
                 {
+                    socket.emit('moving', { name: data.name, dx: 0, dy: 0 });//отправить клиенту нулевой шаг
                     console.log("Место для движения " + data.course + " занято");
                     console.log(Game.rooms[socket.id].Positions[obj.X + dx][obj.Y + dy]);
                     console.log(obj);
@@ -452,6 +454,7 @@ io.on('connection', function (socket) {
         }
         else
         {
+            socket.emit('moving', { name: data.name, dx: 0, dy: 0 });//отправить клиенту нулевой шаг
             console.log("Шаг за пределы " + obj + " "+data.course);
         }
 

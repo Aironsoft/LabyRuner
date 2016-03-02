@@ -35,6 +35,7 @@
         var axisQuarter = 0; //четверть поворота направления
         var dx=0, dy=0; //смещение по осям при повороте
         var spawningTime=1000;//период запроса серверу на создание в лабиринте новых объектов
+        var sendedSteps=0;//количество осправленных серверу шагов
         var isRunning = false;//идёт ли игра
         
         ///////
@@ -43,6 +44,10 @@
         {
             openModal();
         });
+        
+        window.onbeforeunload = function(e){ //срабатывает при покидании страницы (закрытие, переход по ссылке на другую страницу)
+            socket.emit('out', {name: name, room: room});//послать серверу сообщение о выходе из комнаты
+        };
         
         function openModal() {
             var id='#dialog';
@@ -165,14 +170,26 @@
                 0, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
         }
         
+        function sendedStepReduction () //функция каждую секнду уменьшает количество отправленных шагов
+        {
+            if(sendedSteps>1)
+                sendedSteps--;
+            setTimeout(sendedStepReduction, 1000);
+        }
+        
         function stepMoveMe(dx, dy) {
             
-            Me.X += dx;
-            Me.Y += dy;
-            $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize,
-                'top': Me.posY - Me.Y * cellSideSize },
-                500, function () { });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
-            
+            if(dx!=0 || dy!=0)
+            {
+                Me.X += dx;
+                Me.Y += dy;
+                $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize,
+                    'top': Me.posY - Me.Y * cellSideSize },
+                    500, function () {
+                            if(sendedSteps>0)
+                                sendedSteps--;//уменьшить количество необработанных отправленных серверу шагов
+                        });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
+            }
             
             // var ddx=0, ddy=0;
             
@@ -255,6 +272,9 @@
             Me.posX = m[0].offsetLeft;
             Me.posY = m[0].offsetTop;
             
+            changeLife(Me.name);//обновить показатели жизни игрока
+            changeScores(Me.name);//обновить показатели очков игрока
+            
             quickMoveMe();
             
             //повернуть, чтоб лабиринт прямо показывался
@@ -305,9 +325,6 @@
                     createObject(data[key]);
                 }
             }
-            
-            changeLife(Me.name);//обновить показатели жизни игрока
-            changeScores(Me.name);//обновить показатели очков игрока
             
             setInterval(objectSpawning(), spawningTime);//запуск функции периодического запроса новых объектов
             
@@ -398,8 +415,8 @@
                 return;
             if ((e.keyCode <= 40 && e.keyCode >= 37) || e.keyCode == 65 || e.keyCode == 87 || e.keyCode == 68 || e.keyCode == 83) {
                 downButton = e.keyCode;
+                buttonDownIteration();
             }
-            buttonDownIteration();
         });
         
        
@@ -533,13 +550,18 @@
             }
             if (verifyStep(course)) {
                 //msg_system('Отправлено своё движение '+course);
-                socket.emit("moving", { name: Me.name, course: course });
-                setTimeout(buttonDownIteration, buttonTimeout);
+                if(sendedSteps<2)//если серверу отправлено меньше, чем 2 шага
+                {
+                    sendedSteps++;
+                    socket.emit("moving", { name: Me.name, course: course });
+                    //setTimeout(buttonDownIteration, buttonTimeout);
+                }
             }
     
         }
         
         function verifyStep(course) {
+            
             switch (course) { 
                 case "w":
                     return Maze[Me.X][Me.Y].west;
@@ -661,6 +683,7 @@
             msg_system('Объекты получены');
             
             axisQuarter=0;
+            setTimeout(sendedStepReduction, 1000);
             isRunning=true;
             buildObjects(data);
         });
@@ -773,7 +796,7 @@
 
         <div class="right-panel">
             <div class="demo">
-                <a class="permalink" href="http://www.itlessons.info/nodejs/simple-chat-with-nodejs-and-socket-io/">← cсылка на статью</a>
+                <a class="permalink" href="http://www.itlessons.info/nodejs/simple-chat-with-nodejs-and-socket-io/" target="_blank">← cсылка на статью</a>
 
                 <h1>LabyRuner</h1>
 
@@ -858,10 +881,11 @@
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/angular.min.js"></script>
     <script src="/js/require.js"></script>
-    <script src="/js/jquery.transform.2d.js"></script>
-    <script src="/js/jQueryRotate.js"></script>
-    <script type="text/javascript" src="js/jQueryRotateCompressed.2.2.js"></script>
-    <script src="/js/jquery.transform.js"></script>
-    <script src="/js/jq.matrix.animate.js"> </script>
+    <script src="/js/jquery.transform.2d.js"></script><!--Для движения-->
+    <!--<script src="/js/jQueryRotate.js"></script>-->
+    <!--<script type="text/javascript" src="js/jQueryRotateCompressed.2.2.js"></script>-->
+    <!--<script src="/js/jquery.transform.js"></script>-->
+    <script src="/js/jq.matrix.animate.js"> </script><!--Для матричных преобразований-->
+    <!--<script src="/js/unloader.js"> </script>-->
   </body>
 </html>
