@@ -78,6 +78,15 @@ body {
     margin-top: 8px;
 }
 
+.mousemoving {
+    /* position: fixed; */
+    width: 6vmin;
+    height: 6vmin;
+    margin-top: 1vmin;
+    /* margin-right: 5%; */
+    /* margin-bottom: 5%; */
+}
+
 #message_text{
     width: 60%;
     display: inline-block;

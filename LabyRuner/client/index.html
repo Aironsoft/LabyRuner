@@ -34,15 +34,21 @@
         var downButton = 0;
         var axisQuarter = 0; //четверть поворота направления
         var dx=0, dy=0; //смещение по осям при повороте
+        var mouseX=-1, mouseY=-1;//положение мыши относительно окна
+        var lastSendedStep={x:0, y:0};
+        var movingOnMouse=false;//можно ли двигаться за курсором
         var spawningTime=1000;//период запроса серверу на создание в лабиринте новых объектов
         var sendedSteps=0;//количество осправленных серверу шагов
         var isRunning = false;//идёт ли игра
         
         ///////
+        body.on("contextmenu", false);//отключение контекстного меню
+        
         
         $(window).load(function()
         {
             openModal();
+            setInterval(moveToMouse, 200);
         });
         
         window.onbeforeunload = function(e){ //срабатывает при покидании страницы (закрытие, переход по ссылке на другую страницу)
@@ -58,7 +64,7 @@
             $('#mask').fadeTo("slow",0.8); 
             var winH = $(window).height();
             var winW = $(window).width();
-            $(id).css('top',  winH/2-$(id).height()/2);
+            $(id).css('top', winH/2-$(id).height()/2);
             $(id).css('left', winW/2-$(id).width()/2);
             $(id).fadeIn(2000); 
         };
@@ -82,6 +88,109 @@
         $('#reload').click(function () {
             openModal();
         });
+        
+        $(window).mousedown(function (e) {
+            if (e.button == 2) //нажата ПКМ
+            {
+                if(movingOnMouse)
+                {
+                    movingOnMouse=false;
+                    $("#mousemoving").attr("src", "/img/mouse_moving_off.png");
+                }
+                else
+                {
+                    movingOnMouse=true;
+                    $("#mousemoving").attr("src", "/img/mouse_moving_on.png");
+                }
+                    
+                // alert('Right mouse button!');
+                return null;
+            }
+            //return true;
+        });
+        
+        
+        $(window).mousemove(function( event ) //координаты мыши относительно окна
+        {
+            mouseX=event.clientX;
+            mouseY=event.clientY;
+            // var msg = "Handler for .mousemove() called at ";
+            // msg += event.clientX + ", " + event.clientY;
+            // $( "#log" ).append( "<div>" + msg + "</div>" );
+        });
+        
+        function moveToMouse () //функция движения за мышью
+        {
+            if(isRunning && movingOnMouse)
+            {
+                if(sendedSteps<1)
+                {
+                    var mouseXaboutMe=mouseX-Me.posX-Me.halfWidth;
+                    var mouseYaboutMe=Me.posY+Me.halfHeight-mouseY;
+                    
+                    if(Math.sqrt(mouseXaboutMe*mouseXaboutMe+mouseYaboutMe*mouseYaboutMe)>Me.halfWidth+4)
+                    {
+                        var tan= mouseYaboutMe/mouseXaboutMe;
+                        
+                        var course = null;//направление движения
+                        
+                        if(mouseXaboutMe>0)
+                        {
+                            if(tan>1)
+                                course="n";
+                            else if(Math.abs(tan)<1)
+                                course="e";
+                            else //if(tan<1)
+                                course="s";
+                        }
+                        else //если мышь левее маркера игрока
+                        {
+                            if(tan<-1)
+                                course="n";
+                            else if(Math.abs(tan)<1)
+                                course="w";
+                            else //if(tan>1)
+                                course="s";
+                        }
+                        
+                        if (verifyStep(course)) {
+                            //msg_system('Отправлено своё движение '+course);
+                            sendedSteps++;
+                            setLastSendedStep(course);
+                            socket.emit("moving", { name: Me.name, course: course });
+                        }
+                    }
+                    else
+                    {
+                        lastSendedStep.x = 0;
+                        lastSendedStep.y = 0;
+                    }
+                }
+            }
+            //setTimeout(moveToMouse, 200);
+        }
+        
+        function setLastSendedStep(course)
+        {
+            switch (course) { 
+                case "w":
+                    lastSendedStep.x = -1;
+                    lastSendedStep.y = 0;
+                    break;
+                case "n":
+                    lastSendedStep.x = 0;
+                    lastSendedStep.y = -1;
+                    break;
+                case "e":
+                    lastSendedStep.x = 1;
+                    lastSendedStep.y = 0;
+                    break;
+                case "s":
+                    lastSendedStep.x = 0;
+                    lastSendedStep.y = 1;
+                    break;
+            }
+        }
         
         /////////
     
@@ -174,10 +283,23 @@
         {
             if(sendedSteps>1)
                 sendedSteps--;
+                
+            lastSendedStep.x = 0;
+            lastSendedStep.y = 0;
+            
             setTimeout(sendedStepReduction, 1000);
         }
         
         function stepMoveMe(dx, dy) {
+            
+            // if(lastSendedStep.x != 0 && lastSendedStep.y != 0)
+            // {
+                // if(dx != lastSendedStep.x || dy != lastSendedStep.y)//резко ли отличается пришедший шаг от последнего отправленного
+                // {
+                //     sendedSteps--;
+                //     return;
+                // }
+            // }
             
             if(dx!=0 || dy!=0)
             {
@@ -271,6 +393,8 @@
             var m = $("#me");
             Me.posX = m[0].offsetLeft;
             Me.posY = m[0].offsetTop;
+            Me.halfHeight=m[0].offsetHeight/2;
+            Me.halfWidth=m[0].offsetWidth/2;
             
             changeLife(Me.name);//обновить показатели жизни игрока
             changeScores(Me.name);//обновить показатели очков игрока
@@ -821,6 +945,10 @@
                         <input type="text" name="message_text" id="message_text">
                         <button type="button" id="message_btn">Отправить</button>
                     </div>
+                </div>
+            
+                <div>
+                    <img class="mousemoving" id="mousemoving" src="/img/mouse_moving_off.png" alt="Альтернативный текст" width="100" height="80" />
                 </div>
             </div>
         </div>
