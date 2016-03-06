@@ -382,7 +382,9 @@ io.on('connection', function (socket) {
     socket.on('moving', function (data) {
         
         if (Game.rooms[socket.id] == undefined)
+        {
             return;
+        }
 
         var dx = 0, dy = 0;
         

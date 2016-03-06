@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" ng-app>
+<html lang="ru" ng-app>
   <head>
     <title>LabyRuner</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,6 +96,8 @@
                 {
                     movingOnMouse=false;
                     $("#mousemoving").attr("src", "/img/mouse_moving_off.png");
+                    if(sendedSteps>0)
+                        sendedSteps=0;
                 }
                 else
                 {
@@ -312,6 +314,8 @@
                                 sendedSteps--;//уменьшить количество необработанных отправленных серверу шагов
                         });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
             }
+            else if(sendedSteps>0)
+                sendedSteps--;
             
             // var ddx=0, ddy=0;
             
