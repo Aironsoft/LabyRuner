@@ -3,6 +3,55 @@ body {
     background-color: black;
 }
 
+
+/*Выдвигающаяся панель*/
+#slideout {
+    position: fixed;
+    top: 30%;
+    left: 0;
+    -webkit-transition-duration: 0.3s;
+    -moz-transition-duration: 0.3s;
+    -o-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+}
+.question {
+    /* position: fixed; */
+    width: 6vmin;
+    height: 6vmin;
+    max-width: 40px;
+    max-height: 40px;
+    /*margin-top: 1vmin;*/
+    /* margin-right: 5%; */
+    /* margin-bottom: 5%; */
+}
+.question:hover {
+    left: 250px;
+}
+#slideout_inner {
+    position: fixed;
+    top: 30%;
+    left: -250px;
+    background-color: cadetblue;
+    opacity: 0.85;
+    -webkit-transition-duration: 0.3s;
+    -moz-transition-duration: 0.3s;
+    -o-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+}
+#slideout:hover {
+    left: 250px;
+}
+#slideout:hover #slideout_inner {
+    left: 0;
+}
+.info-line {
+    text-indent: 5vmin;
+    width: 250px;
+    display: table-caption;
+    margin-left: 1.5vmin; 
+}
+
+
 .user-widget {
     position: static;
     display: table;
@@ -10,18 +59,18 @@ body {
 }
 
 .life {
-    position: fixed;
+    /*position: fixed;*/
     display: table;
     background-color: springgreen;
     opacity: 0.85;
     padding: 10px;
     font-family: "PT Sans", Verdana, Arial, sans-serif;
     font-size: 18px;
-    margin: 2vmin 30px 50px 3vmin;
+    /*margin: 2vmin 30px 50px 3vmin;*/
 }
 
 .scores {
-    position: fixed;
+    /*position: fixed;*/
     display: table;
     background-color: #cccc00;
     opacity: 0.85;
@@ -29,7 +78,7 @@ body {
     /*margin-top: 7%;*/
     font-family: "PT Sans", Verdana, Arial, sans-serif;
     font-size: 18px;
-    margin: 7% 30px 50px 3vmin;
+    /*margin: 7% 30px 50px 3vmin;*/
 }
 
 .rating {
@@ -234,23 +283,36 @@ body {
 .object
 {
     position: absolute;
+    text-align: center;
+}
+
+.object-name {
+    position: absolute;
+    margin-top: 2px;
+    
+    /*margin-top: -6vmin;*/
+    margin-left: 2px;
+    min-width: 40px;
+    width: 8vmin;
 }
 
 .ball {
-        margin-top: 2px;
-        margin-left: 2px;
-        width: 8vmin;
-        min-width: 40px;
-        height: 8vmin;
-        min-height: 40px;
-        background: #e3e3e3;
-        border: 2px solid #939393;
-        /*line-height: 8vmin;*/
-        text-align: center;
-        border-radius: 50%;
-        /*-moz-border-radius:4vmin;
-        -webkit-border-radius:4vmin;
-        -khtml-border-radius:4vmin;*/
+    position: absolute;
+    margin-top: 2px;
+    margin-left: 2px;
+    /*max-width: 40px;*/
+    min-width: 40px;
+    width: 8vmin;
+    height: 8vmin;
+    min-height: 40px;
+    background: #e3e3e3;
+    border: 2px solid #939393;
+    /*line-height: 8vmin;*/
+    text-align: center;
+    border-radius: 50%;
+    -moz-border-radius:50%;
+    -webkit-border-radius:50%;
+    -khtml-border-radius:50%;
 }
 
 .rune {

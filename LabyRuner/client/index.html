@@ -108,6 +108,53 @@
                 // alert('Right mouse button!');
                 return null;
             }
+            
+            else if (e.button == 0) //нажата ЛКМ
+            {
+                if(sendedSteps<1)
+                {
+                    var aimXaboutMe=mouseX-Me.posX-Me.halfWidth;
+                    var aimYaboutMe=Me.posY+Me.halfHeight-mouseY;
+                    
+                    if(Math.sqrt(aimXaboutMe*aimXaboutMe+aimYaboutMe*aimYaboutMe)>Me.halfWidth+4)
+                    {
+                        var tan= aimYaboutMe/aimXaboutMe;
+                        
+                        var course = null;//направление движения
+                        
+                        if(aimXaboutMe>0)
+                        {
+                            if(tan>1)
+                                course="n";
+                            else if(Math.abs(tan)<1)
+                                course="e";
+                            else //if(tan<1)
+                                course="s";
+                        }
+                        else //если мышь левее маркера игрока
+                        {
+                            if(tan<-1)
+                                course="n";
+                            else if(Math.abs(tan)<1)
+                                course="w";
+                            else //if(tan>1)
+                                course="s";
+                        }
+                        
+                        if (verifyStep(course)) {
+                            //msg_system('Отправлено своё движение '+course);
+                            sendedSteps++;
+                            setLastSendedStep(course);
+                            socket.emit("moving", { name: Me.name, course: course });
+                        }
+                    }
+                    else
+                    {
+                        lastSendedStep.x = 0;
+                        lastSendedStep.y = 0;
+                    }
+                }
+            }
             //return true;
         });
         
@@ -120,6 +167,53 @@
             // msg += event.clientX + ", " + event.clientY;
             // $( "#log" ).append( "<div>" + msg + "</div>" );
         });
+        
+        $(window).dblclick(function (e)  //при двойном нажатии
+        {
+            if(sendedSteps<2)
+            {
+                var aimXaboutMe=mouseX-Me.posX-Me.halfWidth;
+                var aimYaboutMe=Me.posY+Me.halfHeight-mouseY;
+                
+                if(Math.sqrt(aimXaboutMe*aimXaboutMe+aimYaboutMe*aimYaboutMe)>Me.halfWidth+4)
+                {
+                    var tan= aimYaboutMe/aimXaboutMe;
+                    
+                    var course = null;//направление движения
+                    
+                    if(aimXaboutMe>0)
+                    {
+                        if(tan>1)
+                            course="n";
+                        else if(Math.abs(tan)<1)
+                            course="e";
+                        else //if(tan<1)
+                            course="s";
+                    }
+                    else //если мышь левее маркера игрока
+                    {
+                        if(tan<-1)
+                            course="n";
+                        else if(Math.abs(tan)<1)
+                            course="w";
+                        else //if(tan>1)
+                            course="s";
+                    }
+                    
+                    if (verifyStep(course)) {
+                        //msg_system('Отправлено своё движение '+course);
+                        sendedSteps++;
+                        setLastSendedStep(course);
+                        socket.emit("moving", { name: Me.name, course: course });
+                    }
+                }
+                else
+                {
+                    lastSendedStep.x = 0;
+                    lastSendedStep.y = 0;
+                }
+            }
+        })
         
         function moveToMouse () //функция движения за мышью
         {
@@ -309,7 +403,7 @@
                 Me.Y += dy;
                 $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize,
                     'top': Me.posY - Me.Y * cellSideSize },
-                    500, function () {
+                    450, function () {
                             if(sendedSteps>0)
                                 sendedSteps--;//уменьшить количество необработанных отправленных серверу шагов
                         });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
@@ -390,7 +484,8 @@
         
         function createMe() {
             var l = '<div class="me" id="me" margin-left="46vmax">';
-            l += '<div class="ball" style="background-color:'+Me.color+'">' + Me.name + '</div>';
+            l += '<div class="ball" style="background-color:'+Me.color+'"></div>';
+            l += '<div class="object-name">'+ Me.name +'</div>';
             l += '</div>'
             meField
                 .append(l);
@@ -430,7 +525,16 @@
                 if(object.name!=name)//если это не этот игрок
                 {
                     var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
-                    l += '<div class="ball" style="background-color:' + object.color + '">'+ object.name +'</div>';
+                    l += '<div class="ball" style="background-color:' + object.color +'"></div>';
+                    // if($(document).height()>545 && $(document).width()>545) //проверка для правильного отображения на мобильных устройствах
+                    // {
+                    //     l +='"></div>'; // l +='">'+ object.name +'</div>';
+                    // }
+                    // else
+                    // {
+                    //     l +=';max-width: 40px">'+ object.name +'</div>';
+                    // }
+                    l += '<div class="object-name">'+ object.name +'</div>';
                     l += '</div>';
                     Objects
                         .append(l);
@@ -480,7 +584,12 @@
                     msg_system('Игрок ' + object.name + ' присоединился к игре');
                     
                     var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
-                    l += '<div class="ball" style="background-color:' + object.color + '">'+ object.name +'</div>';
+                    l += '<div class="ball" style="background-color:' + object.color +'"></div>';
+                    // if($(document).height()>545 && $(document).width()>545) //проверка для правильного отображения на мобильных устройствах
+                    //     l +='">'+ object.name +'</div>';
+                    // else
+                    //     l +=';max-width: 40px">'+ object.name +'</div>';
+                    l += '<div class="object-name">'+ object.name +'</div>';
                     l += '</div>';
                     Objects
                         .append(l);
@@ -903,7 +1012,7 @@
     
     <!-- Маска, затемняющая фон (для модального окна)-->
     <div id="mask"></div>
-      
+
     
     <div class="mazefield" id="mazefield" ng-controller="GameController">
 
@@ -914,8 +1023,7 @@
 
     <div class="me-field" id="me-field">
         
-        
-        
+        <!--Показатели игрока-->
         <div class="user-widget">
             <div class="life" id="life"></div>
             <div class="scores" id="scores"></div>
@@ -957,6 +1065,16 @@
             </div>
         </div>
 
+    </div>
+        
+    <!-- Выдвигающаяся панель -->
+    <div id="slideout">
+        <img class="question" src="/img/question.png" alt="Отправить отзыв" />
+        <div id="slideout_inner">
+            <div class="info-line">ПКМ - вкл/выкл движение за курсором.</div>
+            <div class="info-line">Single-click - действие.</div>
+            <div class="info-line">Double-click - движение до выбранной клетки.</div>
+        </div>
     </div>
     
     

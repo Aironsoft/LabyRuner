@@ -246,6 +246,27 @@ var GenerateObject = function () {
     return object;
 }
 
+var GenerateTeleports = function (rows, columns)
+{
+    var teleports = new Array();
+    
+    var teleportsCount=rows*columns/100;
+    if(teleportsCount<2)
+        teleportsCount=2;
+    
+    for(var i = 0; i < teleportsCount; i++)
+    {
+        var X = Math.round(Math.random() *( columns - 1));
+        var Y = Math.round(Math.random() *( rows - 1));
+        
+        var teleport = {name: "Телепорт"+ (Math.round(Math.random() * 10000)), type: "teleport", color: null, X: X, Y: Y };
+    
+        teleports.push(teleport);
+    }
+    
+    return teleports;
+}
+
 /////
 
 
@@ -316,6 +337,7 @@ io.on('connection', function (socket) {
                 socket.emit('maze', room.Maze);
                 socket.emit('positions', room.Positions);
                 socket.emit('objects', room.ObjectDict);
+                socket.emit('teleports', room.TeleportDict);
                 
                 var x = Math.round(Math.random() * (room.Maze.length - 1));
                 var y = Math.round(Math.random() * (room.Maze[0].length - 1));
@@ -346,9 +368,11 @@ io.on('connection', function (socket) {
                 }
                 io.sockets.in(room.name).emit('maze', room.Maze);
                 
+                var teleports = GenerateTeleports(room.Maze.length, room.Maze[0].length);
+                
                 console.log("Лабиринт передан");
     
-                for ( var key in room.clients) {
+                for ( var key in room.clients) { //размещение клиентов
                     var x = Math.round(Math.random() * (room.Maze.length - 1));
                     var y = Math.round(Math.random() * (room.Maze[0].length - 1));
     
