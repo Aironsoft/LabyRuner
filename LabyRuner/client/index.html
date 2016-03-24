@@ -27,6 +27,7 @@
         var Maze = null;
         var rows = 0;
         var columns = 0;
+        var Teleports = [];//массив телепортов
         var Positions = null;//положения объектов в лабиринте
         var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
         var Me = null; //объект игрока
@@ -145,7 +146,7 @@
                             //msg_system('Отправлено своё движение '+course);
                             sendedSteps++;
                             setLastSendedStep(course);
-                            socket.emit("moving", { name: Me.name, course: course });
+                            socket.emit("move", { name: Me.name, course: course });
                         }
                     }
                     else
@@ -204,7 +205,7 @@
                         //msg_system('Отправлено своё движение '+course);
                         sendedSteps++;
                         setLastSendedStep(course);
-                        socket.emit("moving", { name: Me.name, course: course });
+                        socket.emit("move", { name: Me.name, course: course });
                     }
                 }
                 else
@@ -253,7 +254,7 @@
                             //msg_system('Отправлено своё движение '+course);
                             sendedSteps++;
                             setLastSendedStep(course);
-                            socket.emit("moving", { name: Me.name, course: course });
+                            socket.emit("move", { name: Me.name, course: course });
                         }
                     }
                     else
@@ -383,10 +384,41 @@
             lastSendedStep.x = 0;
             lastSendedStep.y = 0;
             
+            // socket.emit("syncpos", { name: Me.name, X: Me.X, Y: Me.Y });
+            
             setTimeout(sendedStepReduction, 1000);
         }
         
-        function stepMoveMe(dx, dy) {
+        
+        function portMoveMe(x, y)
+        {
+            if(Me.X!=x || Me.Y!=y)
+            {
+                movingOnMouse=false;
+                $("#mousemoving").attr("src", "/img/mouse_moving_off.png");
+                if(sendedSteps>0)
+                    sendedSteps=0;
+                
+                Me.X = x;
+                Me.Y = y;
+                $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize,
+                    'top': Me.posY - Me.Y * cellSideSize },
+                    350, function () {
+                            if(sendedSteps>0)
+                                sendedSteps--;//уменьшить количество необработанных отправленных серверу шагов
+                            // if(aim!=null) //если произошло перемещение на место
+                            // {
+                            //     if(aim=="portal") //если игрок переместился на портал
+                            //     {
+                            //         socket.emit("portate", { name: Me.name, num: num });
+                            //     }
+                            // }
+                        });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
+            }
+        }
+        
+        
+        function stepMoveMe(dx, dy, aim, num) {
             
             // if(lastSendedStep.x != 0 && lastSendedStep.y != 0)
             // {
@@ -396,20 +428,39 @@
                 //     return;
                 // }
             // }
+            var newX=Me.X + dx;
+            var newY=Me.Y + dy;
             
-            if(dx!=0 || dy!=0)
+            if(newX>=0 && newX<=columns-1 && newY>=0 && newY<=rows-1)
             {
-                Me.X += dx;
-                Me.Y += dy;
-                $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize,
-                    'top': Me.posY - Me.Y * cellSideSize },
-                    450, function () {
-                            if(sendedSteps>0)
-                                sendedSteps--;//уменьшить количество необработанных отправленных серверу шагов
-                        });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
+                if(dx!=0 || dy!=0)
+                {
+                    Me.X = newX;
+                    Me.Y = newY;
+                    // if(Me.X>=0 && Me.X<=)
+                    $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize,
+                        'top': Me.posY - Me.Y * cellSideSize },
+                        450, function () {
+                                if(sendedSteps>0)
+                                    sendedSteps--;//уменьшить количество необработанных отправленных серверу шагов
+                                if(aim!=null) //если произошло перемещение на место
+                                {
+                                    if(aim=="portal") //если игрок переместился на портал
+                                    {
+                                        socket.emit("portate", { name: Me.name, num: num });
+                                    }
+                                }
+                            });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
+                }
+                else if(sendedSteps>0)
+                    sendedSteps--;
             }
-            else if(sendedSteps>0)
-                sendedSteps--;
+            else
+            {
+                if(sendedSteps>0)
+                    sendedSteps--;
+                socket.emit("syncpos", { name: Me.name, X: Me.X, Y: Me.Y });//синхронизация положения игрока с сервером
+            }
             
             // var ddx=0, ddy=0;
             
@@ -474,6 +525,12 @@
                 'top': Y * cellSideSize },
                 50, function () { });//сдвиг объекта относительно лабиринта
         }
+        
+        function portMoveObject(name, X, Y) {
+            $("#"+ name).animate({ 'left': X * cellSideSize,
+                'top': Y * cellSideSize },
+                400, function () { });//сдвиг объекта относительно лабиринта
+        }
     
         function stepMoveObject(name, X, Y) {
             $("#"+ name).animate({ 'left': X * cellSideSize,
@@ -510,8 +567,8 @@
                     });
         }
         
-        function createObject(object) {
-            
+        function createObject(object)
+        {
             if(object.type=="rune") { //если это руна
                 var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
                 l += '<div class="rune">'+ object.value +'</div>';
@@ -526,14 +583,6 @@
                 {
                     var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
                     l += '<div class="ball" style="background-color:' + object.color +'"></div>';
-                    // if($(document).height()>545 && $(document).width()>545) //проверка для правильного отображения на мобильных устройствах
-                    // {
-                    //     l +='"></div>'; // l +='">'+ object.name +'</div>';
-                    // }
-                    // else
-                    // {
-                    //     l +=';max-width: 40px">'+ object.name +'</div>';
-                    // }
                     l += '<div class="object-name">'+ object.name +'</div>';
                     l += '</div>';
                     Objects
@@ -542,6 +591,29 @@
                     quickMoveObject(object.name, object.X, object.Y);
                 }
             }
+            else if(object.type=="portal") //если это телепорт
+            {
+                var m='';
+                if($(document).height()<545 && $(document).width()<545) //проверка для правильного отображения на мобильных устройствах
+                    m=' style="max-width: 40px; max-height: 40px"';//чтобы на телефоне был ограничен максимальный размер значка телепорта
+                
+                var l = '<div class="place" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
+                l += '<img class="place-ball" src="/img/port.png"' +m+' alt="Портал"/>';
+                l += '</div>';
+                
+                $("#places").append(l);// добавить код телепорта к местам
+                
+                quickMoveObject(object.name, object.X, object.Y);//переместить портал в нужное место
+            }
+        }
+        
+        
+        function buildPlaces(data) {
+            $("#places").empty();//удалить места
+            
+            for ( var key in data) {
+                createObject(data[key]);
+            }
         }
     
         
@@ -549,12 +621,12 @@
             Objects.empty();//удалить игроков и объекты
             
             for ( var key in data) {
-                if (key == name) {
-                    Me = data[key];
-                    createMe();
+                if (key != name) { //если это не игрок
+                    createObject(data[key]);
                 }
                 else {
-                    createObject(data[key]);
+                    Me = data[key];
+                    createMe();
                 }
             }
             
@@ -790,7 +862,7 @@
                 if(sendedSteps<2)//если серверу отправлено меньше, чем 2 шага
                 {
                     sendedSteps++;
-                    socket.emit("moving", { name: Me.name, course: course });
+                    socket.emit("move", { name: Me.name, course: course });
                     //setTimeout(buttonDownIteration, buttonTimeout);
                 }
             }
@@ -915,6 +987,13 @@
         });
         
         //Объекты позиции
+        socket.on('portals', function (data) {
+            Teleports = data;
+            msg_system('Порталы получены');
+            buildPlaces(data);
+        });
+        
+        //Объекты позиции
         socket.on('objects', function (data) {
             ObjectDict = data;
             msg_system('Объекты получены');
@@ -928,17 +1007,60 @@
         //От сервера пришло движение объекта
         socket.on('moving', function (data) {
             if (data.name == Me.name) { //если пришло собственное движение
-                //msg_system('Пришло своё движение x='+ data.dx+' y='+ data.dy);
-                stepMoveMe(data.dx, data.dy);
+                msg_system('Пришло своё движение x='+ data.dx+' y='+ data.dy);
+                
+                stepMoveMe(data.dx, data.dy, data.aim, data.num);
             }
             else {
-                //msg_system('Пришло движение объекта x=' + data.dx + ' y=' + data.dy);
+                msg_system('Движение name='+ data.name+ ' x=' + data.dx + ' y=' + data.dy);
+                
                 var obj = ObjectDict[data.name];
                 stepMoveObject(data.name, obj.X+data.dx, obj.Y+data.dy);//сдвинуть объект 
                 Positions[obj.X+data.dx][obj.Y+data.dy] = Positions[obj.X][obj.Y];
                 Positions[obj.X][obj.Y] = null;
                 obj.X += data.dx;
                 obj.Y += data.dy;
+            }
+        });
+        
+        //От сервера пришло движение объекта в портал
+        socket.on('porting', function (data) {
+            msg_system('Телепортация name='+ data.name+ ' x=' + data.x + ' y=' + data.y);
+            
+            if (data.name == Me.name) { //если пришло собственное движение
+                //msg_system('Пришло своё движение x='+ data.dx+' y='+ data.dy);
+                portMoveMe(data.x, data.y);
+            }
+            else {
+                //msg_system('Пришло движение объекта x=' + data.dx + ' y=' + data.dy);
+                var obj = ObjectDict[data.name];
+                Positions[data.x][data.y] = Positions[obj.X][obj.Y];
+                Positions[obj.X][obj.Y] = null;
+                obj.X = data.x;
+                obj.Y = data.y;
+                portMoveObject(data.name, obj.X, obj.Y);//сдвинуть объект 
+            }
+        });
+        
+        //От сервера пришло движение объекта в портал
+        socket.on('syncing', function (data) {
+            if (data.name == Me.name) { //если пришло собственное движение
+                //msg_system('Пришло своё движение x='+ data.dx+' y='+ data.dy);
+                Me.X=data.x;
+                Me.Y=data.y;
+                quickMoveMe();
+            }
+            else {
+                if(obj.X!=data.x && obj.Y!=data.y)
+                {
+                    //msg_system('Пришло движение объекта x=' + data.dx + ' y=' + data.dy);
+                    var obj = ObjectDict[data.name];
+                    quickMoveObject(data.name, data.x, data.y);//сдвинуть объект 
+                    Positions[data.x][data.y] = Positions[obj.X][obj.Y];
+                    Positions[obj.X][obj.Y] = null;
+                    obj.X = data.x;
+                    obj.Y = data.y;
+                }
             }
         });
         
@@ -1017,6 +1139,7 @@
     <div class="mazefield" id="mazefield" ng-controller="GameController">
 
         <div class="maze" id="maze"></div>
+        <div class="places" id="places"></div>
         <div class="objects" id="objects"></div>
 
     </div>

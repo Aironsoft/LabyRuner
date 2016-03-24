@@ -45,7 +45,7 @@ body {
     left: 0;
 }
 .info-line {
-    text-indent: 5vmin;
+    text-indent: 4vmin;
     width: 250px;
     display: table-caption;
     margin-left: 1.5vmin; 
@@ -280,6 +280,30 @@ body {
     left: 45%;
 }
 
+.place
+{
+    position: absolute;
+}
+
+.place-ball {
+    position: absolute;
+    margin-top: 2px;
+    margin-left: 2px;
+    /*max-width: 40px;*/
+    min-width: 40px;
+    width: 8vmin;
+    height: 8vmin;
+    min-height: 40px;
+    background: #0055ff;
+    border: 2px solid #939393;
+    /*line-height: 8vmin;*/
+    /*text-align: center;*/
+    border-radius: 50%;
+    -moz-border-radius:50%;
+    -webkit-border-radius:50%;
+    -khtml-border-radius:50%;
+}
+
 .object
 {
     position: absolute;
@@ -289,8 +313,6 @@ body {
 .object-name {
     position: absolute;
     margin-top: 2px;
-    
-    /*margin-top: -6vmin;*/
     margin-left: 2px;
     min-width: 40px;
     width: 8vmin;
