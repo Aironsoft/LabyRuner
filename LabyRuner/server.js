@@ -448,8 +448,8 @@ io.on('connection', function (socket) {
 
         var dx = 0, dy = 0;
         
-        var obj = Game.rooms[socket.id].ObjectDict[data.name]; //объект, который движется
-        if (obj == undefined)
+        var Obj = Game.rooms[socket.id].ObjectDict[data.name]; //объект, который движется
+        if (Obj == undefined)
             return;
 
         switch (data.course) { 
@@ -468,69 +468,63 @@ io.on('connection', function (socket) {
         }
         console.log("dx = " + dx);
         
-        if(obj.X + dx>-1 && obj.X + dx<Game.rooms[socket.id].Maze.length && obj.Y + dy>-1 && obj.Y + dy<Game.rooms[socket.id].Maze[0].length)
+        if(Obj.X + dx>-1 && Obj.X + dx<Game.rooms[socket.id].Maze.length && Obj.Y + dy>-1 && Obj.Y + dy<Game.rooms[socket.id].Maze[0].length)
         {
-            if(MayMove(Game.rooms[socket.id].Maze[obj.X][obj.Y], data.course))  //если ячейка лабиринта имеет путь в указанную сторону и ход не выходит за пределы
+            if(MayMove(Game.rooms[socket.id].Maze[Obj.X][Obj.Y], data.course))  //если ячейка лабиринта имеет путь в указанную сторону и ход не выходит за пределы
             {
-                if (Game.rooms[socket.id].Positions[obj.X + dx][obj.Y + dy] == null)
+                if (Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy] == null)
                 //если ячейка лабиринта, в которую запрашивается перемещение, пуста
                 {
                     console.log("Место для движения "+ data.course+" свободно");
                     
-                    if( Game.rooms[socket.id].PlacesPos[obj.X+dx][obj.Y+dy]==null) //если следующая ячейка - это не место
+                    if( Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy]==null) //если следующая ячейка - это не место
                     {
-                        console.log("moving "+Game.rooms[socket.id].Positions[obj.X + dx][obj.Y + dy]);
+                        console.log("moving "+Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy]);
                         io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, dx: dx, dy: dy, aim: null, num: null }); //имя и вектор сдвига // { name: data.name, x: obj.X+ dx, y: obj.Y+dy });
             
-                        console.log("obj.X="+ obj.X+" obj.Y="+obj.Y);
-                        var posObj = Game.rooms[socket.id].Positions[obj.X][obj.Y];//старое значение объекта из старой позиции
+                        console.log("obj.X="+ Obj.X+" obj.Y="+Obj.Y);
+                        var posObj = Game.rooms[socket.id].Positions[Obj.X][Obj.Y];//старое значение объекта из старой позиции
                         
                         if(posObj==null)
-                            posObj=ClientCopy(obj);
+                            posObj=ClientCopy(Obj);
                         
-                        posObj.X = obj.X + dx;
-                        posObj.Y = obj.Y + dy;
+                        posObj.X = Obj.X + dx;
+                        posObj.Y = Obj.Y + dy;
                         Game.rooms[socket.id].Positions[posObj.X][posObj.Y] = posObj;
-                        Game.rooms[socket.id].Positions[obj.X][obj.Y] = null;
+                        Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
                         
-                        if(posObj!==obj)
+                        if(posObj!==Obj)
                         {
-                            obj.X += dx;
-                            obj.Y += dy;
+                            Obj.X += dx;
+                            Obj.Y += dy;
                         }
                     }
                     else //если следующая ячейка - это место
                     {
-                        if(Game.rooms[socket.id].PlacesPos[obj.X+dx][obj.Y+dy].type=="portal") //если игрок сходил на портал
+                        if(Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy].type=="portal") //если игрок сходил на портал
                         {
                             var portNum = Math.round(Math.random() * (Game.rooms[socket.id].Teleports.length-1));
                             var aim="portal";
                             
-                            if(Game.rooms[socket.id].Teleports[portNum].X==obj.X+dx && Game.rooms[socket.id].Teleports[portNum].Y ==obj.Y+dy)
+                            if(Game.rooms[socket.id].Teleports[portNum].X==Obj.X+dx && Game.rooms[socket.id].Teleports[portNum].Y ==Obj.Y+dy)
                             {
                                 portNum=null;
                                 aim=null;
                             }
                             
                             io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, dx: dx, dy: dy, aim: aim, num: portNum}); //имя и вектор 
-                            console.log("portal "+Game.rooms[socket.id].Positions[obj.X + dx][obj.Y + dy]);
+                            console.log("portal "+Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy]);
                             
-                            var posObj = Game.rooms[socket.id].Positions[obj.X][obj.Y];//старое значение объекта из старой позиции
-                            if(posObj==null)
-                                posObj=ClientCopy(obj);
+                            Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
+                            Obj.X += dx;
+                            Obj.Y += dy;
                             
-                            posObj.X = obj.X + dx;
-                            posObj.Y = obj.Y + dy;
-                            Game.rooms[socket.id].Positions[posObj.X][posObj.Y] = posObj;
-                            Game.rooms[socket.id].Positions[obj.X][obj.Y] = null;
-            
-                            obj.X += dx;
-                            obj.Y += dy;
+                            Game.rooms[socket.id].Positions[Obj.X][Obj.Y]=ClientCopy(Obj);
                         }
                     }
                 }
                 else {
-                    var forwardObj = Game.rooms[socket.id].Positions[obj.X + dx][obj.Y + dy];//объект, стоящий на пути
+                    var forwardObj = Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy];//объект, стоящий на пути
                     if(forwardObj.type=="rune") //если это руна мешает проходу
                     {
                         io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, dx: dx, dy: dy, aim: null, num: null }); //имя и вектор сдвига игрока
@@ -540,24 +534,18 @@ io.on('connection', function (socket) {
             
                         io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: data.name, ds: 10 }); //на сколько изменилось количество очков игрока
                         
-                        var posObj = Game.rooms[socket.id].Positions[obj.X][obj.Y];//старое значение объекта из старой позиции
-                        if(posObj!=null)
-                        {
-                            posObj.X = obj.X + dx;
-                            posObj.Y = obj.Y + dy;
-                            Game.rooms[socket.id].Positions[posObj.X][posObj.Y] = posObj;
-                            Game.rooms[socket.id].Positions[obj.X][obj.Y] = null;
-                
-                            obj.X += dx;
-                            obj.Y += dy;
-                        }
+                        Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
+                        Obj.X += dx;
+                        Obj.Y += dy;
+                        
+                        Game.rooms[socket.id].Positions[Obj.X][Obj.Y]=ClientCopy(Obj);
                     }
                     else
                     {
                         socket.emit('moving', { name: data.name, dx: 0, dy: 0 });//отправить клиенту нулевой шаг
                         console.log("Место для движения " + data.course + " занято");
-                        console.log(Game.rooms[socket.id].Positions[obj.X + dx][obj.Y + dy]);
-                        console.log(obj);
+                        console.log(Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy]);
+                        console.log(Obj);
                     }
                 }
         
@@ -565,13 +553,13 @@ io.on('connection', function (socket) {
             else
             {
                 socket.emit('moving', { name: data.name, dx: 0, dy: 0 });//отправить клиенту нулевой шаг
-                console.log("Нет пути " + Game.rooms[socket.id].Positions[obj.X][obj.Y] + " "+data.course);
+                console.log("Нет пути " + Game.rooms[socket.id].Positions[Obj.X][Obj.Y] + " "+data.course);
             }
         }
         else
         {
             socket.emit('moving', { name: data.name, dx: 0, dy: 0 });//отправить клиенту нулевой шаг
-            console.log("Шаг за пределы " + obj.X+ ' '+obj.Y + " "+data.course);
+            console.log("Шаг за пределы " + Obj.X+ ' '+Obj.Y + " "+data.course);
         }
 
     });
@@ -594,7 +582,7 @@ io.on('connection', function (socket) {
             Obj.X = portal.X;
             Obj.Y = portal.Y;
             
-            Game.rooms[socket.id].Positions[Obj.X][Obj.Y]=ClientCopy(Obj)
+            Game.rooms[socket.id].Positions[Obj.X][Obj.Y]=ClientCopy(Obj);
             
             // Game.rooms[socket.id].Positions[portal.X][portal.Y] = Obj;
             // Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
