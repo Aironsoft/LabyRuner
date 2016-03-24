@@ -1042,27 +1042,27 @@
             }
         });
         
-        //От сервера пришло движение объекта в портал
-        socket.on('syncing', function (data) {
-            if (data.name == Me.name) { //если пришло собственное движение
-                //msg_system('Пришло своё движение x='+ data.dx+' y='+ data.dy);
-                Me.X=data.x;
-                Me.Y=data.y;
-                quickMoveMe();
-            }
-            else {
-                if(obj.X!=data.x && obj.Y!=data.y)
-                {
-                    //msg_system('Пришло движение объекта x=' + data.dx + ' y=' + data.dy);
-                    var obj = ObjectDict[data.name];
-                    quickMoveObject(data.name, data.x, data.y);//сдвинуть объект 
-                    Positions[data.x][data.y] = Positions[obj.X][obj.Y];
-                    Positions[obj.X][obj.Y] = null;
-                    obj.X = data.x;
-                    obj.Y = data.y;
-                }
-            }
-        });
+        // //От сервера пришло движение объекта в портал
+        // socket.on('syncing', function (data) {
+        //     if (data.name == Me.name) { //если пришло собственное движение
+        //         //msg_system('Пришло своё движение x='+ data.dx+' y='+ data.dy);
+        //         Me.X=data.x;
+        //         Me.Y=data.y;
+        //         quickMoveMe();
+        //     }
+        //     else {
+        //         if(obj.X!=data.x && obj.Y!=data.y)
+        //         {
+        //             //msg_system('Пришло движение объекта x=' + data.dx + ' y=' + data.dy);
+        //             var obj = ObjectDict[data.name];
+        //             quickMoveObject(data.name, data.x, data.y);//сдвинуть объект 
+        //             Positions[data.x][data.y] = Positions[obj.X][obj.Y];
+        //             Positions[obj.X][obj.Y] = null;
+        //             obj.X = data.x;
+        //             obj.Y = data.y;
+        //         }
+        //     }
+        // });
         
         //Полученны данные спауна
         socket.on('spawn', function (data) {

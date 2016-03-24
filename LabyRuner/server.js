@@ -472,7 +472,7 @@ io.on('connection', function (socket) {
         {
             if(MayMove(Game.rooms[socket.id].Maze[Obj.X][Obj.Y], data.course))  //если ячейка лабиринта имеет путь в указанную сторону и ход не выходит за пределы
             {
-                if (Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy] == null)
+                if (Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy] == null || Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy] == undefined)
                 //если ячейка лабиринта, в которую запрашивается перемещение, пуста
                 {
                     console.log("Место для движения "+ data.course+" свободно");
@@ -606,52 +606,52 @@ io.on('connection', function (socket) {
         }
     });
     
-    //для синхронизации положения объекта с сервером
-    socket.on('syncpos', function (data) {
+    // //для синхронизации положения объекта с сервером
+    // socket.on('syncpos', function (data) {
         
-        if (Game.rooms[socket.id] == undefined) //если комната не определена, то выйти
-        {
-            return;
-        }
+    //     if (Game.rooms[socket.id] == undefined) //если комната не определена, то выйти
+    //     {
+    //         return;
+    //     }
         
-        var syncObj = Game.rooms[socket.id].ObjectDict[data.name];
+    //     var syncObj = Game.rooms[socket.id].ObjectDict[data.name];
         
-        if(syncObj.X!=data.x && syncObj.Y!=data.y)
-        {
-            Game.rooms[socket.id].Positions[syncObj.X][syncObj.Y] = null;
-            Game.rooms[socket.id].Positions[data.X][data.Y] = syncObj;
-            syncObj.X=data.X;
-            syncObj.Y=data.Y;
+    //     if(syncObj.X!=data.x && syncObj.Y!=data.y)
+    //     {
+    //         Game.rooms[socket.id].Positions[syncObj.X][syncObj.Y] = null;
+    //         Game.rooms[socket.id].Positions[data.X][data.Y] = syncObj;
+    //         syncObj.X=data.X;
+    //         syncObj.Y=data.Y;
         
-            io.sockets.in(Game.rooms[socket.id].name).emit('syncing', { name: data.name, x: data.X, y: data.Y });
-        }
-    });
+    //         io.sockets.in(Game.rooms[socket.id].name).emit('syncing', { name: data.name, x: data.X, y: data.Y });
+    //     }
+    // });
     
     
     socket.on('wantspawn', function () {//если от клиента пришло сообщение о необходимости что-нибудь создать
-        // if(Game.rooms[socket.id]==undefined)
-        //     return;
+        if(Game.rooms[socket.id]==undefined)
+            return;
     
-        // if(Game.rooms[socket.id].Maze==null)
-        //     return;
+        if(Game.rooms[socket.id].Maze==null)
+            return;
     
-        // var maxX=Game.rooms[socket.id].Maze.length;
-        // var maxY=Game.rooms[socket.id].Maze[0].length;
+        var maxX=Game.rooms[socket.id].Maze.length;
+        var maxY=Game.rooms[socket.id].Maze[0].length;
     
-        // var x = Math.round(Math.random() * (maxX - 1));
-        // var y = Math.round(Math.random() * (maxY - 1));
+        var x = Math.round(Math.random() * (maxX - 1));
+        var y = Math.round(Math.random() * (maxY - 1));
         
-        // if (Game.rooms[socket.id].Positions[x][y] == null)
-        // {
-        //     var object = GenerateObject();
-        //     object.X=x;
-        //     object.Y=y;
+        if (Game.rooms[socket.id].Positions[x][y] == null)
+        {
+            var object = GenerateObject();
+            object.X=x;
+            object.Y=y;
             
-        //     Game.rooms[socket.id].Positions[x][y]=object;
-        //     Game.rooms[socket.id].ObjectDict[object.name] = object;
+            Game.rooms[socket.id].Positions[x][y]=object;
+            Game.rooms[socket.id].ObjectDict[object.name] = object;
             
-        //     io.sockets.in(Game.rooms[socket.id].name).emit('spawn', object);//отправить это сообщение всем членам его комнаты
-        // }
+            io.sockets.in(Game.rooms[socket.id].name).emit('spawn', object);//отправить это сообщение всем членам его комнаты
+        }
     });
 
     socket.on('message', function (message) {//если от клиента пришло сообщение
