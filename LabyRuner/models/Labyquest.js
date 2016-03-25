@@ -43,7 +43,7 @@ var Room = module.exports = function (name) {
     this.Maze = null;
     this.Positions = [];//позиции игроков и предметов в лабиринте //служит для проверки, занята ли ячейка лабиринта
     this.ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
-    this.TeleportDict = {};//словарь телепортов //по названию телепорта возвращает телепорт с его координатами и прочей хренью
+    //this.TeleportDict = {};//словарь телепортов //по названию телепорта возвращает телепорт с его координатами и прочей хренью
     this.Teleports = [];
     this.PlacesPos = [];
 
@@ -52,6 +52,9 @@ var Room = module.exports = function (name) {
 
     this.name = name;
     var clients = this.clients = {};  // clients[client.id]=client
+    this.Commands = [];//по названию команды игроков возвращает её численность
+    //this.maxCommandCount=0;//численность самой большой команды
+    
     
     //this.addClient = function (client) {
     //    if (clients.length < 2)
@@ -86,6 +89,37 @@ Labyquest.prototype.start = function () {
 Room.prototype.addClient = function (client) {
     if (Object.keys(this.clients).length < this.MaxClientCounts)
         this.clients[client.id]=client;
+}
+
+
+/**
+ * Выбирает команду для игрока
+ *
+ */
+Room.prototype.gamerAllocation = function (gamer) {
+    if(this.Commands.length==0)//если массив комманд пуст, то добавить две пустых команды
+    {
+        this.Commands[0]=0;
+        this.Commands[1]=0;
+    }
+    
+    if(gamer.command>=0)
+        this.Commands[gamer.command]--;
+    
+    var selectedCommand=-1;
+    var minCount=this.MaxClientCounts;
+    for(var i=0; i<this.Commands.length; i++)
+    {
+        if(this.Commands[i]<minCount)
+        {
+            minCount=this.Commands[i];
+            selectedCommand=i;
+        }
+    }
+    
+    this.Commands[selectedCommand]++;
+    
+    return selectedCommand;
 }
 
 

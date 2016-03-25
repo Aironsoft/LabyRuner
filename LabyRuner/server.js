@@ -230,12 +230,12 @@ var coordsArray = function (rows, columns) {
 
 
 var Client = function (){
-    var client = {name: null, type: "player", life: 100, scores: 0, room: null, client: null, color: null, X: -1, Y: -1 };
+    var client = {name: null, type: "player", command: -1, life: 100, scores: 0, room: null, client: null, color: null, X: -1, Y: -1 };
     return client;
 }
 
 var ClientCopy = function (client) {
-    var copy = { name: client.name, type: client.type, life: client.life, scores: client.scores, room: client.room, color: client.color, X: client.X, Y: client.Y };
+    var copy = { name: client.name, type: client.type, command: client.command, life: client.life, scores: client.scores, room: client.room, color: client.color, X: client.X, Y: client.Y };
     return copy;
 }
 
@@ -417,6 +417,8 @@ io.on('connection', function (socket) {
                     room.clients[key].me.X = x;
                     room.clients[key].me.Y = y;
                     
+                    room.clients[key].me.command=room.gamerAllocation(room.clients[key].me);
+                    
                     room.Positions[x][y] = ClientCopy(room.clients[key].me);//помещается в случайное место лабиринта
                     room.ObjectDict[room.clients[key].me.name] = ClientCopy(room.clients[key].me);//записывает игрока в словарь объектов
                 }
@@ -525,9 +527,37 @@ io.on('connection', function (socket) {
                 }
                 else {
                     var forwardObj = Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy];//объект, стоящий на пути
+                    
+                    var subObj=Game.rooms[socket.id].ObjectDict[forwardObj.name];
+                    if(subObj!=forwardObj)
+                    {
+                        forwardObj=null;
+                        
+                        socket.emit('moving', { name: data.name, dx: 0, dy: 0 });//отправить клиенту нулевой шаг
+                        console.log("Исправление " + Obj.X + dx+ ' '+Obj.Y + dy + " "+data.course);
+                        return;
+                    }
+                    
+                    var aimNum = null;
+                    var aim=null;
+                    if( Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy]!=null) //если следующая ячейка - это место
+                    {
+                        if(Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy].type=="portal") //если игрок сходил на портал
+                        {
+                            aimNum = Math.round(Math.random() * (Game.rooms[socket.id].Teleports.length-1));
+                            aim="portal";
+                            
+                            if(Game.rooms[socket.id].Teleports[aimNum].X==Obj.X+dx && Game.rooms[socket.id].Teleports[aimNum].Y ==Obj.Y+dy)
+                            {
+                                aimNum=null;
+                                aim=null;
+                            }
+                        }
+                    }
+                    
                     if(forwardObj.type=="rune") //если это руна мешает проходу
                     {
-                        io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, dx: dx, dy: dy, aim: null, num: null }); //имя и вектор сдвига игрока
+                        io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, dx: dx, dy: dy, aim: aim, num: aimNum }); //имя и вектор сдвига игрока
                         
                         delete Game.rooms[socket.id].ObjectDict[forwardObj.name];//удалить уничтожаемый объект из словаря объектов
                         io.sockets.in(Game.rooms[socket.id].name).emit('destroy', forwardObj.name); //указать игрокам имя объекта для уничтожения
@@ -581,6 +611,16 @@ io.on('connection', function (socket) {
             Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
             Obj.X = portal.X;
             Obj.Y = portal.Y;
+            
+            if(Game.rooms[socket.id].Positions[Obj.X][Obj.Y]!=null)//если портал, на который перемещается игрок, не пуст
+            {
+                if(Game.rooms[socket.id].Positions[Obj.X][Obj.Y].type=="rune") //если целевой телепорт занят руной
+                {
+                    delete Game.rooms[socket.id].ObjectDict[Game.rooms[socket.id].Positions[Obj.X][Obj.Y].name];//удалить объект на телепорте из словаря объектов
+                    io.sockets.in(Game.rooms[socket.id].name).emit('destroy', Game.rooms[socket.id].Positions[Obj.X][Obj.Y].name); //указать игрокам имя объекта для уничтожения
+                     io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: Obj.name, ds: 10 }); //на сколько изменилось количество очков игрока
+                }
+            }
             
             Game.rooms[socket.id].Positions[Obj.X][Obj.Y]=ClientCopy(Obj);
             

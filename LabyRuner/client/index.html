@@ -378,7 +378,7 @@
         
         function sendedStepReduction () //функция каждую секнду уменьшает количество отправленных шагов
         {
-            if(sendedSteps>1)
+            if(sendedSteps>=1)
                 sendedSteps--;
                 
             lastSendedStep.x = 0;

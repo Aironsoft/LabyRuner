@@ -315,6 +315,7 @@ body {
     margin-top: 2px;
     margin-left: 2px;
     min-width: 40px;
+    text-align: center;
     width: 8vmin;
 }
 
