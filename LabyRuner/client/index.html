@@ -27,7 +27,8 @@
         var Maze = null;
         var rows = 0;
         var columns = 0;
-        var Teleports = [];//массив телепортов
+        var Portals = [];//массив порталов
+        var Commands = [];//массив команд
         var Positions = null;//положения объектов в лабиринте
         var ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
         var Me = null; //объект игрока
@@ -38,6 +39,7 @@
         var mouseX=-1, mouseY=-1;//положение мыши относительно окна
         var lastSendedStep={x:0, y:0};
         var movingOnMouse=false;//можно ли двигаться за курсором
+        var moving=false; //двигается ли сейчас игрок
         var spawningTime=1000;//период запроса серверу на создание в лабиринте новых объектов
         var sendedSteps=0;//количество осправленных серверу шагов
         var isRunning = false;//идёт ли игра
@@ -218,12 +220,14 @@
         
         function moveToMouse () //функция движения за мышью
         {
-            if(isRunning && movingOnMouse)
+            if(isRunning && movingOnMouse && !moving) //если игра запущена, движение за мышью разрешено и игрок уже не двигается
             {
                 if(sendedSteps<1)
                 {
-                    var mouseXaboutMe=mouseX-Me.posX-Me.halfWidth;
-                    var mouseYaboutMe=Me.posY+Me.halfHeight-mouseY;
+                    sendedSteps++;
+                    
+                    var mouseXaboutMe=mouseX-Me.posX-Me.halfWidth;//-Me.halfWidth
+                    var mouseYaboutMe=Me.posY-mouseY+Me.halfHeight;//+Me.halfHeight
                     
                     if(Math.sqrt(mouseXaboutMe*mouseXaboutMe+mouseYaboutMe*mouseYaboutMe)>Me.halfWidth+4)
                     {
@@ -252,13 +256,20 @@
                         
                         if (verifyStep(course)) {
                             //msg_system('Отправлено своё движение '+course);
-                            sendedSteps++;
                             setLastSendedStep(course);
                             socket.emit("move", { name: Me.name, course: course });
+                        }
+                        else if(sendedSteps>=1)
+                        {
+                            sendedSteps--;
                         }
                     }
                     else
                     {
+                        if(sendedSteps>=1)
+                        {
+                            sendedSteps--;
+                        }
                         lastSendedStep.x = 0;
                         lastSendedStep.y = 0;
                     }
@@ -328,6 +339,13 @@
         }
         
         
+        var ClientCopy = function (client) {
+            var copy = { name: client.name, type: client.type, command: client.command, life: client.life, scores: client.scores,
+                    room: client.room, color: client.color, X: client.X, Y: client.Y };
+            return copy;
+        }
+        
+        
         function buildMaze(data) {
             maze.empty();//очистить содержимое лабиринта
             
@@ -389,6 +407,11 @@
             setTimeout(sendedStepReduction, 1000);
         }
         
+        function notMoving()//указывает, что игрок не движется
+        {
+            moving=false;
+        }
+        
         
         function portMoveMe(x, y)
         {
@@ -418,7 +441,7 @@
         }
         
         
-        function stepMoveMe(dx, dy, aim, num) {
+        function stepMoveMe(X, Y, aim, num) {
             
             // if(lastSendedStep.x != 0 && lastSendedStep.y != 0)
             // {
@@ -428,19 +451,26 @@
                 //     return;
                 // }
             // }
-            var newX=Me.X + dx;
-            var newY=Me.Y + dy;
+            // var newX=Me.X + dx;
+            // var newY=Me.Y + dy;
             
-            if(newX>=0 && newX<=columns-1 && newY>=0 && newY<=rows-1)
+            if(X>=0 && X<=columns-1 && Y>=0 && Y<=rows-1)
             {
-                if(dx!=0 || dy!=0)
+                if(X != Me.X || Y != Me.Y) //если шаг не нулевой
                 {
-                    Me.X = newX;
-                    Me.Y = newY;
+                    moving=true;
+                    
+                    Me.X = X;
+                    Me.Y = Y;
+                    
+                    //setTimeout( notMoving(), 460 );
+
                     // if(Me.X>=0 && Me.X<=)
                     $("#mazefield").animate({ 'left': Me.posX - Me.X * cellSideSize,
                         'top': Me.posY - Me.Y * cellSideSize },
                         450, function () {
+                                moving=false;
+                                
                                 if(sendedSteps>0)
                                     sendedSteps--;//уменьшить количество необработанных отправленных серверу шагов
                                 if(aim!=null) //если произошло перемещение на место
@@ -459,7 +489,7 @@
             {
                 if(sendedSteps>0)
                     sendedSteps--;
-                socket.emit("syncpos", { name: Me.name, X: Me.X, Y: Me.Y });//синхронизация положения игрока с сервером
+                //socket.emit("syncpos", { name: Me.name, X: Me.X, Y: Me.Y });//синхронизация положения игрока с сервером
             }
             
             // var ddx=0, ddy=0;
@@ -535,7 +565,7 @@
         function stepMoveObject(name, X, Y) {
             $("#"+ name).animate({ 'left': X * cellSideSize,
                 'top': Y * cellSideSize },
-                500, function () { });//сдвиг объекта относительно лабиринта
+                450, function () { });//сдвиг объекта относительно лабиринта
         }
     
         
@@ -549,8 +579,8 @@
             var m = $("#me");
             Me.posX = m[0].offsetLeft;
             Me.posY = m[0].offsetTop;
-            Me.halfHeight=m[0].offsetHeight/2;
-            Me.halfWidth=m[0].offsetWidth/2;
+            Me.halfHeight=m[0].scrollHeight/2;
+            Me.halfWidth=m[0].scrollWidth/2;
             
             changeLife(Me.name);//обновить показатели жизни игрока
             changeScores(Me.name);//обновить показатели очков игрока
@@ -605,11 +635,35 @@
                 
                 quickMoveObject(object.name, object.X, object.Y);//переместить портал в нужное место
             }
+            else if(object.type=="cp") //если это коммандная точка
+            {
+                var m='';
+                if($(document).height()<545 && $(document).width()<545) //проверка для правильного отображения на мобильных устройствах
+                    m=' style="max-width: 40px; max-height: 40px"';//чтобы на телефоне был ограничен максимальный размер значка телепорта
+                
+                var image='""';
+                if(object.id==0)
+                {
+                    image='"/img/redPoint.png"';
+                }
+                else if(object.id==1)
+                {
+                    image='"/img/greenPoint.png"';
+                }
+                
+                var l = '<div class="place" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
+                l += '<img class="command-point" src='+ image +m+' alt="Коммандная точка"/>';
+                l += '</div>';
+                
+                $("#places").append(l);// добавить код телепорта к местам
+                
+                quickMoveObject(object.name, object.X, object.Y);//переместить портал в нужное место
+            }
         }
         
         
         function buildPlaces(data) {
-            $("#places").empty();//удалить места
+            //$("#places").empty();//удалить места
             
             for ( var key in data) {
                 createObject(data[key]);
@@ -618,7 +672,7 @@
     
         
         function buildObjects(data) {
-            Objects.empty();//удалить игроков и объекты
+            //Objects.empty();//удалить игроков и объекты
             
             for ( var key in data) {
                 if (key != name) { //если это не игрок
@@ -948,6 +1002,8 @@
         socket.on('compleate_room', function (data) {
             maze.empty();//очистить содержимое лабиринта
             Objects.empty();//удалить игроков и объекты
+            $("#places").empty();//удалить места
+            
             $("#me").remove();//удалить маркер игрока
             
             msg_system('Соединение установлено!');
@@ -988,8 +1044,15 @@
         
         //Объекты позиции
         socket.on('portals', function (data) {
-            Teleports = data;
+            Portals = data;
             msg_system('Порталы получены');
+            buildPlaces(data);
+        });
+        
+        //Объекты позиции
+        socket.on('commands', function (data) {
+            Commands = data;
+            msg_system('Команды получены');
             buildPlaces(data);
         });
         
@@ -1007,19 +1070,19 @@
         //От сервера пришло движение объекта
         socket.on('moving', function (data) {
             if (data.name == Me.name) { //если пришло собственное движение
-                msg_system('Пришло своё движение x='+ data.dx+' y='+ data.dy);
+                msg_system('Пришло своё движение x='+ data.x+' y='+ data.y);
                 
-                stepMoveMe(data.dx, data.dy, data.aim, data.num);
+                stepMoveMe(data.x, data.y, data.aim, data.num);
             }
             else {
-                msg_system('Движение name='+ data.name+ ' x=' + data.dx + ' y=' + data.dy);
+                msg_system('Движение name='+ data.name+ ' x=' + data.x + ' y=' + data.y);
                 
                 var obj = ObjectDict[data.name];
-                stepMoveObject(data.name, obj.X+data.dx, obj.Y+data.dy);//сдвинуть объект 
-                Positions[obj.X+data.dx][obj.Y+data.dy] = Positions[obj.X][obj.Y];
+                stepMoveObject(data.name, data.x, data.y);//сдвинуть объект 
+                Positions[data.x][data.y] = Positions[obj.X][obj.Y];
                 Positions[obj.X][obj.Y] = null;
-                obj.X += data.dx;
-                obj.Y += data.dy;
+                obj.X += data.x;
+                obj.Y += data.y;
             }
         });
         
@@ -1034,8 +1097,17 @@
             else {
                 //msg_system('Пришло движение объекта x=' + data.dx + ' y=' + data.dy);
                 var obj = ObjectDict[data.name];
-                Positions[data.x][data.y] = Positions[obj.X][obj.Y];
-                Positions[obj.X][obj.Y] = null;
+                try {
+                    Positions[data.x][data.y] = Positions[obj.X][obj.Y];
+                    Positions[obj.X][obj.Y] = null;
+                }
+                catch (e) {
+                    var posObj=ClientCopy(obj);  
+                    posObj.X = data.x;
+                    posObj.Y = data.y;
+                    Positions[data.x][data.y]=posObj;
+                }
+                
                 obj.X = data.x;
                 obj.Y = data.y;
                 portMoveObject(data.name, obj.X, obj.Y);//сдвинуть объект 

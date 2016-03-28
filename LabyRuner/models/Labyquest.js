@@ -2,7 +2,6 @@ var util = require('util'), EventEmitter = require('events').EventEmitter;
 
 var Labyquest = module.exports = function () {
 
-    
     //this.games = [];// Массив [id игры = объект игры]
     
     this.users = [];// Массив [подключённых пользователей = id игры]
@@ -12,6 +11,9 @@ var Labyquest = module.exports = function () {
     // Размеры поля
     this.x = 30;
     this.y = 30;
+    
+    this.maxSize=100;
+    this.minSise=5
 
     // Время на игру (минуты)
     this.stepsToWin = 4;
@@ -44,15 +46,16 @@ var Room = module.exports = function (name) {
     this.Positions = [];//позиции игроков и предметов в лабиринте //служит для проверки, занята ли ячейка лабиринта
     this.ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
     //this.TeleportDict = {};//словарь телепортов //по названию телепорта возвращает телепорт с его координатами и прочей хренью
-    this.Teleports = [];
+    
     this.PlacesPos = [];
+    this.Portals = [];
+    this.Commands = [];//по названию команды игроков возвращает её численность
 
     this.MinClientCounts=2;//минимальное количество клиентов для начала игры
     this.MaxClientCounts=12;//максимальное количество клиентов в комнате
 
     this.name = name;
     var clients = this.clients = {};  // clients[client.id]=client
-    this.Commands = [];//по названию команды игроков возвращает её численность
     //this.maxCommandCount=0;//численность самой большой команды
     
     
@@ -99,25 +102,25 @@ Room.prototype.addClient = function (client) {
 Room.prototype.gamerAllocation = function (gamer) {
     if(this.Commands.length==0)//если массив комманд пуст, то добавить две пустых команды
     {
-        this.Commands[0]=0;
-        this.Commands[1]=0;
+        this.Commands[0]={id: 0, name: "Красная", type: "cp", count: 0, X: -1, Y: -1 };
+        this.Commands[1]={id: 1, name: "Зелёная", type: "cp", count: 0, X: -1, Y: -1 };
     }
     
     if(gamer.command>=0)
-        this.Commands[gamer.command]--;
+        this.Commands[gamer.command].count--;
     
     var selectedCommand=-1;
     var minCount=this.MaxClientCounts;
     for(var i=0; i<this.Commands.length; i++)
     {
-        if(this.Commands[i]<minCount)
+        if(this.Commands[i].count<minCount)
         {
-            minCount=this.Commands[i];
+            minCount=this.Commands[i].count;
             selectedCommand=i;
         }
     }
     
-    this.Commands[selectedCommand]++;
+    this.Commands[selectedCommand].count++;
     
     return selectedCommand;
 }
