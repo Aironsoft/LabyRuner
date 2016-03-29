@@ -579,7 +579,12 @@
         
         function createMe() {
             var l = '<div class="me" id="me" margin-left="46vmax">';
-            l += '<div class="ball" style="background-color:'+Me.color+'"></div>';
+            var ball="ball";
+            if(Me.command==0)
+                ball="red-ball";
+            else if(Me.command==1)
+                ball="green-ball";
+            l += '<div class='+ball+' style="background-color:'+Me.color+'"></div>';
             l += '<div class="min-crystal" id="'+name+'-burden" src="/img/redCrystal.png"></div>';
             //l += '<img class="min-crystal" src="/img/redCrystal.png"' +m+'></img>';
             l += '<div class="object-name">'+ Me.name +'</div>';
@@ -622,7 +627,12 @@
                 if(object.name!=name)//если это не этот игрок
                 {
                     var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
-                    l += '<div class="ball" style="background-color:' + object.color +'"></div>';
+                    var ball="ball";
+                    if(object.command==0)
+                        ball="red-ball";
+                    else if(object.command==1)
+                        ball="green-ball";
+                    l += '<div class='+ball+' style="background-color:'+object.color+'"></div>';
                     l += '<div class="min-crystal" id="'+object.name+'-burden" src="/img/redCrystal.png"' +m+'></div>';
                     l += '<div class="object-name">'+ object.name +'</div>';
                     l += '</div>';
