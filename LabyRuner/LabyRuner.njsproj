@@ -38,8 +38,15 @@
     <Content Include="client\css\bootstrap-responsive.min.css" />
     <Content Include="client\css\bootstrap.min.css" />
     <Content Include="client\css\modal.css" />
+    <Content Include="client\favicon.ico" />
     <Content Include="client\img\glyphicons-halflings-white.png" />
     <Content Include="client\img\glyphicons-halflings.png" />
+    <Content Include="client\img\greenPoint.png" />
+    <Content Include="client\img\mouse_moving_off.png" />
+    <Content Include="client\img\mouse_moving_on.png" />
+    <Content Include="client\img\port.png" />
+    <Content Include="client\img\question.png" />
+    <Content Include="client\img\redPoint.png" />
     <Content Include="client\index.html" />
     <Content Include="client\main.css" />
     <Content Include="package.json" />

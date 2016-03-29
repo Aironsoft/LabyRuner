@@ -304,6 +304,111 @@ body {
     -khtml-border-radius:50%;
 }
 
+.min-crystal {
+    position: absolute;
+    /*margin-top: 2px;*/
+    /*margin-left: 2px;*/
+    /*max-width: 40px;*/
+    min-width: 15px;
+    width: 4vmin;
+    height: 4vmin;
+    min-height: 15px;
+    /*background: #0055ff;*/
+    /*border: 2px solid #939393;*/
+    /*line-height: 8vmin;*/
+    /*text-align: center;*/
+    border-radius: 50%;
+    -moz-border-radius:50%;
+    -webkit-border-radius:50%;
+    -khtml-border-radius:50%;
+}
+
+@media screen and (min-width:240px) and (max-width:720px) and (min-height:240px) and (max-width:960px) {
+.min-crystal {
+    position: absolute;
+    /*margin-top: 2px;*/
+    /*margin-left: 2px;*/
+    max-width: 20px;
+    max-height: 20px;
+    min-width: 15px;
+    width: 4vmin;
+    height: 4vmin;
+    min-height: 15px;
+    /*background: #0055ff;*/
+    /*border: 2px solid #939393;*/
+    /*line-height: 8vmin;*/
+    /*text-align: center;*/
+    border-radius: 50%;
+    -moz-border-radius:50%;
+    -webkit-border-radius:50%;
+    -khtml-border-radius:50%;
+}
+
+.place-ball {
+    position: absolute;
+    margin-top: 2px;
+    margin-left: 2px;
+    max-width: 40px;
+    max-height: 40px;
+    min-width: 40px;
+    width: 8vmin;
+    height: 8vmin;
+    min-height: 40px;
+    background: #0055ff;
+    border: 2px solid #939393;
+    /*line-height: 8vmin;*/
+    /*text-align: center;*/
+    border-radius: 50%;
+    -moz-border-radius:50%;
+    -webkit-border-radius:50%;
+    -khtml-border-radius:50%;
+}
+
+.command-point {
+    position: absolute;
+    margin-top: 2px;
+    margin-left: 2px;
+    max-width: 40px;
+    max-height: 40px;
+    min-width: 40px;
+    width: 8vmin;
+    height: 8vmin;
+    min-height: 40px;
+    background: #0055ff;
+    border: 2px solid #939393;
+    /*line-height: 8vmin;*/
+    /*text-align: center;*/
+    border-radius: 20%;
+    -moz-border-radius:20%;
+    -webkit-border-radius:20%;
+    -khtml-border-radius:20%;
+}
+}
+
+@media screen and (min-width:240px) and (max-width:720px) and (min-height:240px) and (max-width:960px) {
+    .place-ball {
+    position: absolute;
+    margin-top: 2px;
+    margin-left: 2px;
+    max-width: 40px;
+    max-height: 40px;
+    min-width: 40px;
+    width: 8vmin;
+    height: 8vmin;
+    min-height: 40px;
+    background: #0055ff;
+    border: 2px solid #939393;
+    /*line-height: 8vmin;*/
+    /*text-align: center;*/
+    border-radius: 50%;
+    -moz-border-radius:50%;
+    -webkit-border-radius:50%;
+    -khtml-border-radius:50%;
+}
+}
+
+
+
 .command-point {
     position: absolute;
     margin-top: 2px;
@@ -326,7 +431,7 @@ body {
 .object
 {
     position: absolute;
-    text-align: center;
+    /*text-align: center;*/
 }
 
 .object-name {
@@ -350,6 +455,7 @@ body {
     background: #e3e3e3;
     border: 2px solid #939393;
     /*line-height: 8vmin;*/
+    vertical-align: middle;
     text-align: center;
     border-radius: 50%;
     -moz-border-radius:50%;

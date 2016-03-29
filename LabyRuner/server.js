@@ -41,13 +41,13 @@ var Point = function () // (rows, columns)
 {
     this.X = -1;
     this.Y = -1;
-}
+};
 
 var Point = function (x, y) // (rows, columns)
 {    
     this.X = x;
     this.Y = y;
-}
+};
 
 
 var Cell = function (is_blocked) {
@@ -59,7 +59,7 @@ var Cell = function (is_blocked) {
     this.east = false;
     
     this.has_way = false;
-}
+};
 
 
 var mazeArray = function (rows, columns) {
@@ -211,7 +211,7 @@ var GenerateMaze = function (rows, columns) {
     }
     
     return maze;
-}
+};
 
 
 /**
@@ -226,59 +226,60 @@ var coordsArray = function (rows, columns) {
         }
     }
     return arr;
-}
+};
 
 
 var Client = function (){
     var client = {name: null, type: "player", command: -1, life: 100, scores: 0,
             socketID: null, room: null, client: null, color: null, X: -1, Y: -1 };
     return client;
-}
+};
 
 var ClientCopy = function (client) {
     var copy = { name: client.name, type: client.type, command: client.command, life: client.life, scores: client.scores,
-            room: client.room, color: client.color, X: client.X, Y: client.Y };
+            burden: client.burden, room: client.room, color: client.color, X: client.X, Y: client.Y };
     return copy;
-}
+};
 
 var GenerateObject = function () {
     var r = Math.round(Math.random() *( runes.length - 1));
     var rune = runes[r];
     var object = {name: "Руна"+ (Math.round(Math.random() * 10000)), type: "rune", value: rune, color: null, X: -1, Y: -1 };
     return object;
-}
+};
 
-var GenerateCrystals = function (rows, columns, Positions) {    //room.Positions
+var GenerateCrystals = function (rows, columns, PlacesPos, ObjectDict) {    // , ObjectDict , PlacesPos , Positions
     
-    var crystals=[];
+    var commandsCount=2;
+    //var crystals=[];
+    //Crystals=[];
     
-    var crystallCount=rows*columns/80;
-    if(crystallCount<10)
-        crystallCount=10;
+    var crystallCount=rows*columns/160;
+    if(crystallCount<4)
+        crystallCount=4;
     
-    for(var i = 0; i < crystallCount; i++)
+    for(var j = 0; j < commandsCount; j++)
     {
-        var X = Math.round(Math.random() *( columns - 1));
-        var Y = Math.round(Math.random() *( rows - 1));
-        
-        if(Positions[X][Y]==null)
+        for(var i = 0; i < crystallCount; i++)
         {
-            var crystal = {name: "Кристал"+ (Math.round(Math.random() * 10000)), type: "crystal", color: null, X: X, Y: Y };
-            crystals.push(crystal);
+            var X = Math.round(Math.random() *( columns - 1));
+            var Y = Math.round(Math.random() *( rows - 1));
             
-            Positions[X][Y]=crystal;
-        }
-        else
-        {
-            i--;
+            if(PlacesPos[X][Y]==null)
+            {
+                var crystal = {name: "Кристал"+ (Math.round(Math.random() * 10000)), type: "crystal", command: j, taker: null, color: null, X: X, Y: Y };
+                ObjectDict[crystal.name]=crystal;
+                //Crystals.push(crystal);
+                
+                PlacesPos[X][Y]=crystal;
+            }
+            else
+            {
+                i--;
+            }
         }
     }
-    
-    var r = Math.round(Math.random() *( runes.length - 1));
-    var rune = runes[r];
-    var object = {name: "Руна"+ (Math.round(Math.random() * 10000)), type: "crystal", value: rune, color: null, X: -1, Y: -1 };
-    return object;
-}
+};
 
 var GeneratePortals = function (rows, columns, PlacesPos) //
 {
@@ -305,7 +306,7 @@ var GeneratePortals = function (rows, columns, PlacesPos) //
     }
     
     return portals;
-}
+};
 
 var GenerateCommandPoints = function (rows, columns, PlacesPos, Commands)
 {
@@ -332,7 +333,7 @@ var GenerateCommandPoints = function (rows, columns, PlacesPos, Commands)
     }
     
     //return commandPoints;
-}
+};
 
 
 //можно ли из данной ячейки переместиться в указанную сторону
@@ -358,7 +359,7 @@ var MayMove = function(cell, course)
             break;
     }
     return false;
-}
+};
 
 
 /////
@@ -457,19 +458,22 @@ io.on('connection', function (socket) {
             {
                 io.sockets.in(room.name).emit('compleate_room', '');//послать всем участникам комнаты сообщение, что их комната заполнена
                 
+                var sz=5;
                 if (room.Maze == null || room.Maze == undefined) {
-                    room.Maze = GenerateMaze(5, 5);//генерация лабиринта
-                    room.Positions = coordsArray(5, 5);//массив позиций в лабиринте
+                    room.Maze = GenerateMaze(sz, sz);//генерация лабиринта
+                    room.Positions = coordsArray(sz, sz);//массив позиций в лабиринте
                     console.log("Лабиринт создан");
                 }
                 io.sockets.in(room.name).emit('maze', room.Maze);
                 
-                room.PlacesPos=coordsArray(5, 5);//массив мест в лабиринте;
+                room.PlacesPos=coordsArray(room.Maze.length, room.Maze[0].length);//массив мест в лабиринте;
                 room.Portals = GeneratePortals(room.Maze.length, room.Maze[0].length, room.PlacesPos);//генерация порталов
                 for(var i=0; i<room.Portals.length; i++)
                 {
                     room.PlacesPos[room.Portals[i].X][room.Portals[i].Y]=room.Portals[i]; //добавление телепортов в позиции мест
                 }
+                
+                GenerateCrystals(room.Maze.length, room.Maze[0].length, room.PlacesPos, room.ObjectDict);//генерация кристаллов // , room.ObjectDict , room.Positions
                 //room.Commands
                 
                 console.log("Лабиринт передан");
@@ -521,6 +525,7 @@ io.on('connection', function (socket) {
         {
             var room=Game.rooms[Game.users[data.name].id];//комната игрока
             socket.me=Game.rooms[Game.users[data.name].id].ObjectDict[data.name];//Game.users[data.name];
+            Game.users[data.name].id=socket.id;
             socket.me.id=socket.id;
             room.addClient(socket);
             socket.join(room.name);
@@ -609,7 +614,7 @@ io.on('connection', function (socket) {
                         else if(Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy].type=="cp") //если игрок сходил на коммандную точку
                         {
                             // var portNum = Math.round(Math.random() * (Game.rooms[socket.id].Portals.length-1));
-                             var aim="cp";
+                            var aim="cp";
                             
                             // if(Game.rooms[socket.id].Portals[portNum].X==Obj.X+dx && Game.rooms[socket.id].Portals[portNum].Y ==Obj.Y+dy)
                             // {
@@ -626,9 +631,29 @@ io.on('connection', function (socket) {
                             
                             Game.rooms[socket.id].Positions[Obj.X][Obj.Y]=ClientCopy(Obj);
                         }
+                        else if(Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy].type=="crystal") //если игрок сходил на кристалл
+                        {
+                            var aim="crystal";
+                            var aimName=Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy].name;
+                            
+                            if(Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy].taker!=null || Obj.burden!=null)//если этот кристалл уже кто-то поднял или игрок уже что-то несёт
+                            {
+                                aimName=null;
+                                aim=null;
+                            }
+                            
+                            io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, x: Obj.X+dx, y: Obj.Y+dy, aim: aim, num: aimName}); //имя и вектор 
+                            console.log("crystal "+Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy]);
+                            
+                            Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
+                            Obj.X += dx;
+                            Obj.Y += dy;
+                            
+                            Game.rooms[socket.id].Positions[Obj.X][Obj.Y]=ClientCopy(Obj);
+                        }
                     }
                 }
-                else {
+                else { //если следующая ячейка занята
                     var forwardObj = Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy];//объект, стоящий на пути
                     
                     var subObj=Game.rooms[socket.id].ObjectDict[forwardObj.name];
@@ -664,6 +689,21 @@ io.on('connection', function (socket) {
                     }
                     
                     if(forwardObj.type=="rune") //если это руна мешает проходу
+                    {
+                        io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, x: Obj.X+dx, y: Obj.Y+dy, aim: aim, num: aimNum }); //имя и вектор сдвига игрока
+                        
+                        delete Game.rooms[socket.id].ObjectDict[forwardObj.name];//удалить уничтожаемый объект из словаря объектов
+                        io.sockets.in(Game.rooms[socket.id].name).emit('destroy', forwardObj.name); //указать игрокам имя объекта для уничтожения
+            
+                        io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: data.name, ds: 10 }); //на сколько изменилось количество очков игрока
+                        
+                        Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
+                        Obj.X += dx;
+                        Obj.Y += dy;
+                        
+                        Game.rooms[socket.id].Positions[Obj.X][Obj.Y]=ClientCopy(Obj);
+                    }
+                    else if(forwardObj.type=="crystal") //если на следующей ячейке кристалл
                     {
                         io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, x: Obj.X+dx, y: Obj.Y+dy, aim: aim, num: aimNum }); //имя и вектор сдвига игрока
                         
@@ -754,6 +794,48 @@ io.on('connection', function (socket) {
         }
     });
     
+    socket.on('take', function (data) {
+        
+        if (Game.rooms[socket.id] == undefined) //если комната не определена, то выйти
+        {
+            return;
+        }
+        
+        Game.rooms[socket.id].ObjectDict[data.obj].taker=data.name;
+        Game.rooms[socket.id].ObjectDict[data.name].burden=data.obj;
+        
+        io.sockets.in(Game.rooms[socket.id].name).emit('taking', { name: data.name, objname: data.obj });
+        console.log("Taking "+data.obj);
+        
+        // var Obj = Game.rooms[socket.id].ObjectDict[data.name];
+        
+        //var portal = Game.rooms[socket.id].Portals[data.o];
+        
+        // if(Obj.X!=portal.X || Obj.Y!=portal.Y)
+        // {
+        //     //Game.rooms[socket.id].Positions[portal.X][portal.Y] = Obj;
+        //     Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
+        //     Obj.X = portal.X;
+        //     Obj.Y = portal.Y;
+            
+        //     if(Game.rooms[socket.id].Positions[Obj.X][Obj.Y]!=null)//если портал, на который перемещается игрок, не пуст
+        //     {
+        //         if(Game.rooms[socket.id].Positions[Obj.X][Obj.Y].type=="rune") //если целевой телепорт занят руной
+        //         {
+        //             delete Game.rooms[socket.id].ObjectDict[Game.rooms[socket.id].Positions[Obj.X][Obj.Y].name];//удалить объект на телепорте из словаря объектов
+        //             io.sockets.in(Game.rooms[socket.id].name).emit('destroy', Game.rooms[socket.id].Positions[Obj.X][Obj.Y].name); //указать игрокам имя объекта для уничтожения
+        //              io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: Obj.name, ds: 10 }); //на сколько изменилось количество очков игрока
+        //         }
+        //     }
+            
+        //     Game.rooms[socket.id].Positions[Obj.X][Obj.Y]=ClientCopy(Obj);
+            
+        //     io.sockets.in(Game.rooms[socket.id].name).emit('taking', { name: data.name, objname: portal.X });
+        //     console.log("Taking "+Obj.X +' '+Obj.Y);
+        // }
+    });
+    
+    
     // //для синхронизации положения объекта с сервером
     // socket.on('syncpos', function (data) {
         
@@ -831,6 +913,29 @@ io.on('connection', function (socket) {
                 delete Game.rooms[socket.id].ObjectDict[data.name];//удалить объект из словаря объектов
                 
                 if(obj.type=="player") {
+                    if(obj.burden!=null)//если игрок что-то нёс
+                    {
+                        var burdenName=obj.burden;
+                        var burden = Game.rooms[socket.id].ObjectDict[burdenName];
+                        //var takerName = burden.taker;
+                        
+                        var X = obj.X;
+                        var Y = obj.Y;
+                        while( Game.rooms[socket.id].PlacesPos[X][Y]!=null)
+                        {
+                            X = Math.round(Math.random() *( Game.rooms[socket.id].Maze.length - 1));
+                            Y = Math.round(Math.random() *( Game.rooms[socket.id].Maze[0].length - 1));
+                        }
+                        io.sockets.in(Game.rooms[socket.id].name).emit('putting', { burden: burdenName, X: X, Y: Y });
+                        
+                        Game.rooms[socket.id].PlacesPos[burden.X][burden.Y] = null;
+                        burden.X = X;
+                        burden.Y = Y;
+                        Game.rooms[socket.id].PlacesPos[burden.X][burden.Y]=ClientCopy(burden);
+                        
+                        console.log("Putting "+data.obj);
+                    }
+                    
                     delete Game.rooms[socket.id].clients[socket.id];//удалить объект из списка клиентов в комнате
                      
                     if (!Game.rooms[socket.id].hasMinClients()) {  //если в неполной комнате не заполнено минимальное количество мест

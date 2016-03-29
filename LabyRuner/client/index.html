@@ -479,6 +479,10 @@
                                     {
                                         socket.emit("portate", { name: Me.name, num: num });
                                     }
+                                    else if(aim=="crystal") //если игрок переместился на портал
+                                    {
+                                        socket.emit("take", { name: Me.name, obj: num });
+                                    }
                                 }
                             });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
                 }
@@ -572,6 +576,8 @@
         function createMe() {
             var l = '<div class="me" id="me" margin-left="46vmax">';
             l += '<div class="ball" style="background-color:'+Me.color+'"></div>';
+            l += '<div class="min-crystal" id="'+name+'-burden" src="/img/redCrystal.png"></div>';
+            //l += '<img class="min-crystal" src="/img/redCrystal.png"' +m+'></img>';
             l += '<div class="object-name">'+ Me.name +'</div>';
             l += '</div>'
             meField
@@ -613,6 +619,7 @@
                 {
                     var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
                     l += '<div class="ball" style="background-color:' + object.color +'"></div>';
+                    l += '<div class="min-crystal" id="'+object.name+'-burden" src="/img/redCrystal.png"' +m+'></div>';
                     l += '<div class="object-name">'+ object.name +'</div>';
                     l += '</div>';
                     Objects
@@ -632,6 +639,26 @@
                 l += '</div>';
                 
                 $("#places").append(l);// добавить код телепорта к местам
+                
+                quickMoveObject(object.name, object.X, object.Y);//переместить портал в нужное место
+            }
+            else if(object.type=="crystal") //если это кристалл
+            {
+                // var m='';
+                // if($(document).height()<545 && $(document).width()<545) //проверка для правильного отображения на мобильных устройствах
+                //     m=' style="max-width: 40px; max-height: 40px"';//чтобы на телефоне был ограничен максимальный размер значка телепорта
+                
+                var img="";
+                if(object.command==0)
+                    img="/img/redCrystal.png";
+                else if(object.command==1)
+                    img="/img/greenCrystal.png";
+                
+                var l = '<div class="place" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
+                l += '<img class="place-ball" src='+ img + ' alt="Кристалл"/>'; //m+
+                l += '</div>';
+                
+                Objects.append(l);// добавить код кристалла к объектам
                 
                 quickMoveObject(object.name, object.X, object.Y);//переместить портал в нужное место
             }
@@ -692,10 +719,11 @@
         }
         
         function spawn(object) {
-            Positions[object.X][object.Y]=object;
             ObjectDict[object.name] = object;
             
             if(object.type=="rune") { //если это руна
+                Positions[object.X][object.Y]=object;
+                
                 var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
                 l += '<div class="rune">'+ object.value +'</div>';
                 l += '</div>';
@@ -705,6 +733,8 @@
                 quickMoveObject(object.name, object.X, object.Y);
             }
             else if(object.type=="player") { //если это игрок
+                Positions[object.X][object.Y]=object;
+                
                 if(object.name!=name)//если это не этот игрок
                 {
                     msg_system('Игрок ' + object.name + ' присоединился к игре');
@@ -728,6 +758,9 @@
                     Me = object;
                     createMe();
                 }
+                
+            }
+            else if(object.type=="crystal") { //если это кристалл
                 
             }
         }
@@ -1111,6 +1144,45 @@
                 obj.X = data.x;
                 obj.Y = data.y;
                 portMoveObject(data.name, obj.X, obj.Y);//сдвинуть объект 
+            }
+        });
+        
+        //От сервера пришло поднятие объекта
+        socket.on('taking', function (data) {
+            msg_system('Взятие name='+ data.name+ ' obj=' + data.objname);
+            
+            //var obj=$("#"+data.objname);
+            
+            var object=ObjectDict[data.objname];
+            
+            if(object!=undefined)
+            {
+                $("#"+data.objname).remove(); //empty()
+                var img='';
+                if(object.command==0)
+                    img='"/img/redCrystal.png"';
+                else if(object.command==1)
+                    img='"/img/greenCrystal.png"';
+                var m='<img class="min-crystal" src='+img+'></img>';
+                $("#"+data.name+"-burden").append(m);
+            }
+        });
+        
+        //От сервера пришло опускание объекта
+        socket.on('putting', function (data) {
+            msg_system('Опускание name='+ data.burden+ ' X=' + data.X);
+            
+            //var obj=$("#"+data.objname);
+            
+            var burden=ObjectDict[data.burden];
+            
+            if(burden!=undefined)
+            {
+                burden.X = data.X;
+                burden.Y = data.Y;
+                
+                createObject(burden);
+                quickMoveObject(burden.name, burden.X, burden.Y);
             }
         });
         
