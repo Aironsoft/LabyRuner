@@ -455,6 +455,8 @@ io.on('connection', function (socket) {
                 socket.me.X = x;
                 socket.me.Y = y;
                 
+                socket.me.command=room.gamerAllocation(socket.me);
+                
                 room.Positions[x][y] = ClientCopy(socket.me);//помещается в случайное место лабиринта
                 room.ObjectDict[socket.me.name] = ClientCopy(socket.me);//записывает игрока в словарь объектов
                     
