@@ -241,6 +241,14 @@ var ClientCopy = function (client) {
     return copy;
 };
 
+var Comparison = function (client1, client2) {
+    if(client1.name==client2.name && client1.type==client2.type // && client1.command=client2.command
+            && client1.X==client2.X && client1.Y==client2.Y )
+        return true;
+    else
+        return false;
+};
+
 var GenerateObject = function () {
     var r = Math.round(Math.random() *( runes.length - 1));
     var rune = runes[r];
@@ -660,16 +668,16 @@ io.on('connection', function (socket) {
                     var forwardObj = Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy];//объект, стоящий на пути
                     
                     var subObj=Game.rooms[socket.id].ObjectDict[forwardObj.name];
-                    if(subObj!=forwardObj)
+                    if(!Comparison(subObj, forwardObj))//если объекты отличаются
                     {
                         if(subObj!=null && subObj!=undefined)
                         {
                             if(subObj.type!="player")
                                 delete Game.rooms[socket.id].ObjectDict[forwardObj.name];
                         }
-                        forwardObj=null;
+                        Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy]=null;
                         
-                        socket.emit('moving', { name: data.name, x: Obj.X, y: Obj.Y });//отправить клиенту нулевой шаг
+                        socket.emit('moving', { name: data.name, x: Obj.X, y: Obj.Y });//отправить клиенту нулевой шаг //, barrier: forwardObj
                         console.log("Исправление " + Obj.X + dx+ ' '+Obj.Y + dy + " "+data.course);
                         return;
                     }
