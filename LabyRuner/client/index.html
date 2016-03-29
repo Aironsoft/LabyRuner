@@ -483,6 +483,10 @@
                                     {
                                         socket.emit("take", { name: Me.name, obj: num });
                                     }
+                                    else if(aim=="cp") //если игрок переместился на командную точку
+                                    {
+                                        socket.emit("deposit", Me.name);
+                                    }
                                 }
                             });//сдвиг лабиринта для его правильной позиции относительно позиции игрока
                 }
@@ -1166,6 +1170,18 @@
                 var m='<img class="min-crystal" src='+img+'></img>';
                 $("#"+data.name+"-burden").append(m);
             }
+        });
+        
+        //От сервера пришло внесение кристалла в командную точку
+        socket.on('deposition', function (data) {
+            msg_system('Внесение name='+ data.name+ ' burden=' + data.burden);
+            
+            $("#"+data.name+"-burden").empty();//удалить груз из блока игрока
+            
+            //var burden=ObjectDict[data.burden];
+            //Positions[burden.X][burden.Y] = null;//удалить объект из массива позиций
+            
+            ObjectDict.Remove(data.burden);//удалить объект из словаря объектов
         });
         
         //От сервера пришло опускание объекта
