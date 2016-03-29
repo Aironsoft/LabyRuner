@@ -102,8 +102,8 @@ Room.prototype.addClient = function (client) {
 Room.prototype.gamerAllocation = function (gamer) {
     if(this.Commands.length==0)//если массив комманд пуст, то добавить две пустых команды
     {
-        this.Commands[0]={id: 0, name: "Красная", command: 0, type: "cp", count: 0, X: -1, Y: -1 };
-        this.Commands[1]={id: 1, name: "Зелёная", command: 1, type: "cp", count: 0, X: -1, Y: -1 };
+        this.Commands[0]={id: 0, name: "Красная", command: 0, type: "cp", count: 0, score: 0, X: -1, Y: -1 };
+        this.Commands[1]={id: 1, name: "Зелёная", command: 1, type: "cp", count: 0, score: 0, X: -1, Y: -1 };
     }
     
     if(gamer.command>=0)

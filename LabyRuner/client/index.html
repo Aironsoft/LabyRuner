@@ -714,6 +714,8 @@
         
         function buildObjects(data) {
             //Objects.empty();//удалить игроков и объекты
+            // $("#redscore").append(Commands[0].score);
+            // $("#greenscore").append(Commands[1].score);
             
             for ( var key in data) {
                 if (key != name) { //если это не игрок
@@ -754,7 +756,12 @@
                     msg_system('Игрок ' + object.name + ' присоединился к игре');
                     
                     var l = '<div class="object" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
-                    l += '<div class="ball" style="background-color:' + object.color +'"></div>';
+                    var ball="ball";
+                    if(object.command==0)
+                        ball="red-ball";
+                    else if(object.command==1)
+                        ball="green-ball";
+                    l += '<div class='+ball+' style="background-color:'+object.color+'"></div>';
                     // if($(document).height()>545 && $(document).width()>545) //проверка для правильного отображения на мобильных устройствах
                     //     l +='">'+ object.name +'</div>';
                     // else
@@ -1050,6 +1057,8 @@
             maze.empty();//очистить содержимое лабиринта
             Objects.empty();//удалить игроков и объекты
             $("#places").empty();//удалить места
+            $("#redscore").empty();
+            $("#greenscore").empty();
             
             $("#me").remove();//удалить маркер игрока
             
@@ -1101,6 +1110,10 @@
             Commands = data;
             msg_system('Команды получены');
             buildPlaces(data);
+            $("#redscore").empty();
+            $("#greenscore").empty();
+            $("#redscore").append(Commands[0].score);
+            $("#greenscore").append(Commands[1].score);
         });
         
         //Объекты позиции
@@ -1256,16 +1269,31 @@
         
         //Полученны данные изменения очков
         socket.on('score', function (data) {
+            var Obj=null;
             if(data.name==name) {
+                Obj=Me;
                 Me.scores+=data.ds;
                 changeScores(name);
             }
             else
             {
-                var obj = ObjectDict[data.name];
-                if(obj.type=="player")
-                    obj.scores+=data.ds;
-                Positions[obj.X][obj.Y]=obj;
+                Obj = ObjectDict[data.name];
+                if(Obj.type=="player")
+                    Obj.scores+=data.ds;
+                // Positions[Obj.X][Obj.Y]=Obj;
+            }
+            
+            if(Obj.command==0)
+            {
+                Commands[0].score+=data.ds;
+                $("#redscore").empty();
+                $("#redscore").append(Commands[0].score);
+            }
+            else if(Obj.command==1)
+            {
+                Commands[1].score+=data.ds;
+                $("#greenscore").empty();
+                $("#greenscore").append(Commands[1].score);
             }
         });
         
@@ -1322,6 +1350,11 @@
             <div class="scores" id="scores"></div>
             <div class="rating" id="rating"></div>
         </div>
+        
+        <div class="top-panel">
+          	<div class="redscore" id="redscore">0</div>
+          	<div class="greenscore" id="greenscore">0</div>
+  		</div>
 
         <div class="right-panel">
             <div class="demo">

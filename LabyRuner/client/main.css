@@ -96,6 +96,49 @@ body {
     margin: 10px 0.5% 50px auto;
 }
 
+.top-panel {
+    position: relative;
+    display: inline-flex;
+    opacity: 0.85;
+    min-height: 30px;
+    min-width: 80px;
+    /*height: 5vmin;*/
+    font-size: 16pt;
+    text-align: center;
+    vertical-align: middle;
+    padding-top: 3vmin;
+    top: -76px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /*width: auto;*/
+}
+
+.redscore
+{
+    position: static;
+    padding: 4px;
+    padding-left:10px;
+    padding-right:10px;
+    background-color: #f00;
+    text-align: center;
+    /*width: 50%;*/
+    min-width: 55px;
+    width: auto;
+}
+
+.greenscore
+{
+    position: static;
+    padding: 4px;
+    padding-left:10px;
+    padding-right:10px;
+    background-color: #0f0;
+    text-align: center;
+    /*width: 50%;*/
+    min-width: 55px;
+    width: auto;
+}
+
 .demo {
     position: fixed;
     display: table;

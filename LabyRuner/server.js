@@ -533,6 +533,12 @@ io.on('connection', function (socket) {
         
         if (Game.rooms[socket.id] == undefined) //если комната не определена, то выйти
         {
+            if(Game.users[data.name]==undefined)
+            {
+                //io.sockets.in(Game.rooms[socket.id].name).emit('destroy', data.name); //указать игрокам имя объекта для уничтожения
+                return;
+            }
+            
             var room=Game.rooms[Game.users[data.name].id];//комната игрока
             socket.me=Game.rooms[Game.users[data.name].id].ObjectDict[data.name];//Game.users[data.name];
             Game.users[data.name].id=socket.id;
@@ -709,6 +715,7 @@ io.on('connection', function (socket) {
                         io.sockets.in(Game.rooms[socket.id].name).emit('destroy', forwardObj.name); //указать игрокам имя объекта для уничтожения
             
                         io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: data.name, ds: 10 }); //на сколько изменилось количество очков игрока
+                        Game.rooms[socket.id].Commands[Obj.command].score+=10;
                         
                         Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
                         Obj.X += dx;
@@ -724,6 +731,7 @@ io.on('connection', function (socket) {
                         io.sockets.in(Game.rooms[socket.id].name).emit('destroy', forwardObj.name); //указать игрокам имя объекта для уничтожения
             
                         io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: data.name, ds: 10 }); //на сколько изменилось количество очков игрока
+                        Game.rooms[socket.id].Commands[Obj.command].score+=10;
                         
                         Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
                         Obj.X += dx;
@@ -780,6 +788,7 @@ io.on('connection', function (socket) {
                     delete Game.rooms[socket.id].ObjectDict[Game.rooms[socket.id].Positions[Obj.X][Obj.Y].name];//удалить объект на телепорте из словаря объектов
                     io.sockets.in(Game.rooms[socket.id].name).emit('destroy', Game.rooms[socket.id].Positions[Obj.X][Obj.Y].name); //указать игрокам имя объекта для уничтожения
                     io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: Obj.name, ds: 10 }); //на сколько изменилось количество очков игрока
+                    Game.rooms[socket.id].Commands[Obj.command].score+=10;
                 }
             }
             
@@ -827,6 +836,7 @@ io.on('connection', function (socket) {
             console.log("Deposition "+burden);
             
             io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: name, ds: score }); //на сколько изменилось количество очков игрока
+            Game.rooms[socket.id].Commands[Game.rooms[socket.id].ObjectDict[name].command].score+=score;
             
             Game.rooms[socket.id].ObjectDict[name].burden=null;//у игрока больше нет ноши
             
