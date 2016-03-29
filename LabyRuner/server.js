@@ -613,16 +613,11 @@ io.on('connection', function (socket) {
                         }
                         else if(Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy].type=="cp") //если игрок сходил на коммандную точку
                         {
-                            // var portNum = Math.round(Math.random() * (Game.rooms[socket.id].Portals.length-1));
-                            var aim="cp";
-                            //var aimNum=Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy].name;//название командной точки
-                            // if(Game.rooms[socket.id].Portals[portNum].X==Obj.X+dx && Game.rooms[socket.id].Portals[portNum].Y ==Obj.Y+dy)
-                            // {
-                            //     portNum=null;
-                            //     aim=null;
-                            // }
+                            var aim=null;
+                            if(Game.rooms[socket.id].PlacesPos[Obj.X+dx][Obj.Y+dy].command==Obj.command) //если эта командная точка команды игрока
+                                aim="cp";
                             
-                            io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, x: Obj.X+dx, y: Obj.Y+dy, aim: aim, num: null}); //имя и вектор // {X:Obj.X, Y:Obj.Y}
+                            io.sockets.in(Game.rooms[socket.id].name).emit('moving', { name: data.name, x: Obj.X+dx, y: Obj.Y+dy, aim: aim}); //имя и вектор // {X:Obj.X, Y:Obj.Y}
                             console.log("cp "+Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy]);
                             
                             Game.rooms[socket.id].Positions[Obj.X][Obj.Y] = null;
@@ -811,11 +806,17 @@ io.on('connection', function (socket) {
         if(burdenName!=null)//если игрок что-то нёс
         {
             var burden= Game.rooms[socket.id].ObjectDict[burdenName];
+            
+            var score=300;
+            if(burden.command!=Game.rooms[socket.id].ObjectDict[name].command) //если игрок взял кристалл другой команды
+            {
+                score/=2; //уменьшить вдвое очки за кристалл
+            }
         
             io.sockets.in(Game.rooms[socket.id].name).emit('deposition', { name: name, burden: burdenName });
             console.log("Deposition "+burden);
             
-            io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: name, ds: 300 }); //на сколько изменилось количество очков игрока
+            io.sockets.in(Game.rooms[socket.id].name).emit('score', { name: name, ds: score }); //на сколько изменилось количество очков игрока
             
             Game.rooms[socket.id].ObjectDict[name].burden=null;//у игрока больше нет ноши
             
