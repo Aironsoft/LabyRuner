@@ -262,7 +262,7 @@ var GenerateCrystals = function (rows, columns, PlacesPos, ObjectDict) {    // ,
     //var crystals=[];
     //Crystals=[];
     
-    var crystallCount=rows*columns/160;
+    var crystallCount=rows*columns/120;
     if(crystallCount<4)
         crystallCount=4;
     
@@ -288,6 +288,41 @@ var GenerateCrystals = function (rows, columns, PlacesPos, ObjectDict) {    // ,
         }
     }
 };
+
+
+var GenerateRamdomCrystal = function (rows, columns, PlacesPos, ObjectDict) {    // , ObjectDict , PlacesPos , Positions
+    
+    var commandsCount=2;
+    
+    var crystalCommand=Math.round(Math.random() *( commandsCount - 1));
+    
+    var X = Math.round(Math.random() *( columns - 1));
+    var Y = Math.round(Math.random() *( rows - 1));
+    
+    //var crystal=null;
+    var maxIteration=0;//сколько раз уже подбиралась незанятая позиция кристалла
+    while(PlacesPos[X][Y]!=null && maxIteration<5)
+    {
+        X = Math.round(Math.random() *( columns - 1));
+        Y = Math.round(Math.random() *( rows - 1));
+    }
+    
+    if(maxIteration>=5)
+    {
+        return null;
+    }
+    else
+    {
+        var crystal = {name: "Кристал"+ (Math.round(Math.random() * 10000)), type: "crystal", command: crystalCommand, taker: null, color: null, X: X, Y: Y };
+        ObjectDict[crystal.name]=crystal;
+        
+        PlacesPos[X][Y]=crystal;
+        
+        return crystal;
+    }
+};
+
+
 
 var GeneratePortals = function (rows, columns, PlacesPos) //
 {
@@ -343,6 +378,48 @@ var GenerateCommandPoints = function (rows, columns, PlacesPos, Commands)
     //return commandPoints;
 };
 
+
+//функция отсчёта времени комнаты
+var TimeStep = function(room)
+{
+    room.remainingTime--;
+    io.sockets.in(room.name).emit('time', room.remainingTime);
+    
+    if(room.remainingTime<=0)//если время в комнате вышло
+    {
+        var winCommand=-1;
+        var maxScore=-1;
+        for(var i = 0; i < room.Commands.length; i++) 
+        {
+            if(room.Commands[i].score>maxScore)
+            {
+                maxScore=room.Commands[i].score;
+                winCommand=i;
+            }
+            else if(room.Commands[i].score==maxScore && winCommand!=-1)
+            {
+                maxScore=room.Commands[i].score;
+                var winner1=winCommand;
+                winCommand={winner1: winner1, winner2: i};
+            }
+        }
+        
+        io.sockets.in(room.name).emit('gameover', winCommand);
+        
+        for(var client in room.clients) {
+            delete Game.rooms[client];
+        }
+        if(Game.unfullRooms[room.name]!=undefined)
+            delete Game.unfullRooms[room.name];
+        else if(Game.fullRooms[room.name]!=undefined)
+            delete Game.fullRooms[room.name];
+    }
+    else
+    {
+        //setTimeout(TimeStep(room), 999); //func, [delay, param1
+        setTimeout(TimeStep, 999, room);
+    }
+}
 
 //можно ли из данной ячейки переместиться в указанную сторону
 var MayMove = function(cell, course)
@@ -468,7 +545,7 @@ io.on('connection', function (socket) {
             {
                 io.sockets.in(room.name).emit('compleate_room', '');//послать всем участникам комнаты сообщение, что их комната заполнена
                 
-                var sz=5;
+                var sz=40;
                 if (room.Maze == null || room.Maze == undefined) {
                     room.Maze = GenerateMaze(sz, sz);//генерация лабиринта
                     room.Positions = coordsArray(sz, sz);//массив позиций в лабиринте
@@ -523,6 +600,9 @@ io.on('connection', function (socket) {
                 room.isBuilded = true;//отметить, что комната построена
                 
                 Game.unfullRooms[room.name]=room;//поместить текущую комнату в список неполных
+                
+                TimeStep(room);//начать обратный отсчёт времени в комнате
+                
                 Game.incompleateRoom = null;//и отметить, что неполной комнаты нет
             }
             
@@ -540,7 +620,11 @@ io.on('connection', function (socket) {
             }
             
             var room=Game.rooms[Game.users[data.name].id];//комната игрока
-            socket.me=Game.rooms[Game.users[data.name].id].ObjectDict[data.name];//Game.users[data.name];
+            if(room==undefined) //если комната перестала существовать
+            {
+                return;
+            }
+            socket.me=room.ObjectDict[data.name];//Game.users[data.name];
             Game.users[data.name].id=socket.id;
             socket.me.id=socket.id;
             room.addClient(socket);
@@ -672,22 +756,22 @@ io.on('connection', function (socket) {
                         }
                     }
                 }
-                else { //если следующая ячейка занята
+                else { //если следующая ячейка 
+                
                     var forwardObj = Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy];//объект, стоящий на пути
-                    
-                    var subObj=Game.rooms[socket.id].ObjectDict[forwardObj.name];
-                    if(!Comparison(subObj, forwardObj))//если объекты отличаются
+                    var subObj=Game.rooms[socket.id].ObjectDict[forwardObj.name]; //тот же объект, только из словаря
+                    if(subObj!=null && subObj!=undefined)
                     {
-                        if(subObj!=null && subObj!=undefined)
+                        if(!Comparison(subObj, forwardObj))//если объекты отличаются
                         {
                             if(subObj.type!="player")
                                 delete Game.rooms[socket.id].ObjectDict[forwardObj.name];
+                            Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy]=null;
+                            
+                            socket.emit('moving', { name: data.name, x: Obj.X, y: Obj.Y });//отправить клиенту нулевой шаг //, barrier: forwardObj
+                            console.log("Исправление " + Obj.X + dx+ ' '+Obj.Y + dy + " "+data.course);
+                            return;
                         }
-                        Game.rooms[socket.id].Positions[Obj.X + dx][Obj.Y + dy]=null;
-                        
-                        socket.emit('moving', { name: data.name, x: Obj.X, y: Obj.Y });//отправить клиенту нулевой шаг //, barrier: forwardObj
-                        console.log("Исправление " + Obj.X + dx+ ' '+Obj.Y + dy + " "+data.course);
-                        return;
                     }
                     
                     var aimNum = null;
@@ -842,6 +926,10 @@ io.on('connection', function (socket) {
             
             Game.rooms[socket.id].PlacesPos[burden.X][burden.Y] = null;
             delete Game.rooms[socket.id].ObjectDict[burdenName];
+            
+            var newCrystal=GenerateRamdomCrystal(Game.rooms[socket.id].Maze.length, Game.rooms[socket.id].Maze[0].length, Game.rooms[socket.id].PlacesPos, Game.rooms[socket.id].ObjectDict);
+            if(newCrystal!=null)
+                io.sockets.in(Game.rooms[socket.id].name).emit('spawn', newCrystal);//отправить новый кристалл
         }
     });
     

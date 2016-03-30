@@ -92,6 +92,36 @@
             openModal();
         });
         
+        //открывает финальное окно
+        function openFinal() {
+            var id='#final';
+            var maskHeight = $(document).height();
+            var maskWidth = $(window).width();
+            $('#mask').css({'width':maskWidth,'height':maskHeight});
+            $('#mask').fadeIn(1000);
+            $('#mask').fadeTo("slow",0.8); 
+            var winH = $(window).height();
+            var winW = $(window).width();
+            $(id).css('top', winH/2-$(id).height()/2);
+            $(id).css('left', winW/2-$(id).width()/2);
+            $(id).fadeIn(2000); 
+        };
+        
+        $('#submitEnd').click(function () {
+            $('#mask, .window').hide();
+            
+            maze.empty();//очистить содержимое лабиринта
+            Objects.empty();//удалить игроков и объекты
+            $("#places").empty();//удалить места
+            $("#redscore").empty();
+            $("#greenscore").empty();
+            $('#timepanel').empty();
+            $('#finaltext').empty();
+            $("#me").remove();//удалить маркер игрока
+            
+            openModal();
+        });
+        
         $(window).mousedown(function (e) {
             if (e.button == 2) //нажата ПКМ
             {
@@ -658,10 +688,6 @@
             }
             else if(object.type=="crystal") //если это кристалл
             {
-                // var m='';
-                // if($(document).height()<545 && $(document).width()<545) //проверка для правильного отображения на мобильных устройствах
-                //     m=' style="max-width: 40px; max-height: 40px"';//чтобы на телефоне был ограничен максимальный размер значка телепорта
-                
                 var img="";
                 if(object.command==0)
                     img="/img/redCrystal.png";
@@ -748,6 +774,21 @@
                     
                 quickMoveObject(object.name, object.X, object.Y);
             }
+            else if(object.type=="crystal") { //если это кристалл
+                var img="";
+                if(object.command==0)
+                    img="/img/redCrystal.png";
+                else if(object.command==1)
+                    img="/img/greenCrystal.png";
+                
+                var l = '<div class="place" id="'+ object.name+'" Title="'+ object.name+'" alt="'+ object.name +'">';
+                l += '<img class="place-ball" src='+ img + ' alt="Кристалл"/>'; //m+
+                l += '</div>';
+                
+                Objects.append(l);// добавить код кристалла к объектам
+                
+                quickMoveObject(object.name, object.X, object.Y);//переместить портал в нужное место
+            }
             else if(object.type=="player") { //если это игрок
                 Positions[object.X][object.Y]=object;
                 
@@ -779,9 +820,6 @@
                     Me = object;
                     createMe();
                 }
-                
-            }
-            else if(object.type=="crystal") { //если это кристалл
                 
             }
         }
@@ -1059,6 +1097,8 @@
             $("#places").empty();//удалить места
             $("#redscore").empty();
             $("#greenscore").empty();
+            $('#timepanel').empty();
+            $('#finaltext').empty();
             
             $("#me").remove();//удалить маркер игрока
             
@@ -1130,12 +1170,12 @@
         //От сервера пришло движение объекта
         socket.on('moving', function (data) {
             if (data.name == Me.name) { //если пришло собственное движение
-                msg_system('Пришло своё движение x='+ data.x+' y='+ data.y);
+                //msg_system('Пришло своё движение x='+ data.x+' y='+ data.y);
                 
                 stepMoveMe(data.x, data.y, data.aim, data.num);
             }
             else {
-                msg_system('Движение name='+ data.name+ ' x=' + data.x + ' y=' + data.y);
+                //msg_system('Движение name='+ data.name+ ' x=' + data.x + ' y=' + data.y);
                 
                 var obj = ObjectDict[data.name];
                 stepMoveObject(data.name, data.x, data.y);//сдвинуть объект 
@@ -1148,7 +1188,7 @@
         
         //От сервера пришло движение объекта в портал
         socket.on('porting', function (data) {
-            msg_system('Телепортация name='+ data.name+ ' x=' + data.x + ' y=' + data.y);
+            //msg_system('Телепортация name='+ data.name+ ' x=' + data.x + ' y=' + data.y);
             
             if (data.name == Me.name) { //если пришло собственное движение
                 //msg_system('Пришло своё движение x='+ data.dx+' y='+ data.dy);
@@ -1176,7 +1216,7 @@
         
         //От сервера пришло поднятие объекта
         socket.on('taking', function (data) {
-            msg_system('Взятие name='+ data.name+ ' obj=' + data.objname);
+            //msg_system('Взятие name='+ data.name+ ' obj=' + data.objname);
             
             //var obj=$("#"+data.objname);
             
@@ -1197,7 +1237,7 @@
         
         //От сервера пришло внесение кристалла в командную точку
         socket.on('deposition', function (data) {
-            msg_system('Внесение name='+ data.name+ ' burden=' + data.burden);
+            //msg_system('Внесение name='+ data.name+ ' burden=' + data.burden);
             
             $("#"+data.name+"-burden").empty();//удалить груз из блока игрока
             
@@ -1223,6 +1263,14 @@
                 createObject(burden);
                 quickMoveObject(burden.name, burden.X, burden.Y);
             }
+        });
+        
+        
+        //Полученно время от сервера
+        socket.on('time', function (data) {
+            //msg_system('Осталось времени '+data);
+            $('#timepanel').empty();
+            $('#timepanel').append(data);
         });
         
         // //От сервера пришло движение объекта в портал
@@ -1314,6 +1362,27 @@
         });
         
         
+        //Полученно окончание игры
+        socket.on('gameover', function (data) {
+            isRunning=false;//остановить игру
+            //msg_system('Осталось времени '+data);
+            $('#timepanel').empty();
+            $('#timepanel').append("Игра окончена!");
+            
+            if(data.winner1==undefined) //если победитель 1
+            {
+                $('#finaltext').empty();
+                $('#finaltext').append(Commands[data].name + " команда победила со счётом " + Commands[data].score );
+            }
+            else
+            {
+                $('#finaltext').empty();
+                $('#finaltext').append("Ничья со счётом " + Commands[data.winner1].score );
+            }
+            openFinal();
+        });
+        
+        
         
       }
     </script>
@@ -1327,6 +1396,13 @@
             <div class="top"><a href="#" class="link close"/>Закрыть</a></div>
             <input name="name" id="input-name" placeholder="* Введите ваше имя" class="textbox" required />
             <input name="submit" id="submit" class="btn btn-form" type="submit" value="Подключиться" onClick=""/>
+        </div>
+        
+        <div id="final" class="window">
+            <!--<div class="top"><a href="#" class="link close"/>Закрыть</a></div>-->
+            <!--<input name="name" id="input-name" placeholder="* Введите ваше имя" class="textbox" required />-->
+            <div class="finaltext" id="finaltext"></div>
+            <input name="submit" id="submitEnd" class="btn btn-form" type="submit" value="OK" onClick=""/>
         </div>
     </div>
     
@@ -1355,14 +1431,16 @@
           	<div class="redscore" id="redscore">0</div>
           	<div class="greenscore" id="greenscore">0</div>
   		</div>
+  		
+  		<div class="timepanel" id="timepanel"></div>
 
         <div class="right-panel">
             <div class="demo">
-                <a class="permalink" href="http://www.itlessons.info/nodejs/simple-chat-with-nodejs-and-socket-io/" target="_blank">← cсылка на статью</a>
+                <!--<a class="permalink" href="http://www.itlessons.info/nodejs/simple-chat-with-nodejs-and-socket-io/" target="_blank">← cсылка на статью</a>-->
 
                 <h1>LabyRuner</h1>
 
-                <button id="reload">Новая игра</button>
+                <button class="btn btn-form" id="reload">Новая игра</button>
                 <div id="stats" class="ui-widget" valign="top"></div>
                 <hr />
 

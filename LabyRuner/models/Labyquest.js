@@ -42,6 +42,8 @@ var Room = module.exports = function (name) {
     //this.isRunning = false;
     this.isBuilded = false;
     
+    this.remainingTime=180;
+    
     this.Maze = null;
     this.Positions = [];//позиции игроков и предметов в лабиринте //служит для проверки, занята ли ячейка лабиринта
     this.ObjectDict = {};//словарь объектов //по названию объекта возвращает объект с его координатами и прочей хренью
@@ -52,7 +54,7 @@ var Room = module.exports = function (name) {
     this.Commands = [];//по названию команды игроков возвращает её численность
 
     this.MinClientCounts=2;//минимальное количество клиентов для начала игры
-    this.MaxClientCounts=12;//максимальное количество клиентов в комнате
+    this.MaxClientCounts=8;//максимальное количество клиентов в комнате
 
     this.name = name;
     var clients = this.clients = {};  // clients[client.id]=client
